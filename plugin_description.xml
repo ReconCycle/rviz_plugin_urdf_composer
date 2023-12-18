@@ -1,0 +1,10 @@
+<library path="lib/librviz_plugin_urdf_composer">
+  <class name="rviz_plugin_urdf_composer/URDF_Composer"
+         type="rviz_plugin_tutorials::TeleopPanel"
+         base_class_type="rviz::Panel">
+    <description>
+      A plugin for asembling multiple xacro-urdf files to single xacro-urdf file.
+    </description>
+  </class>
+  </class>
+</library>
