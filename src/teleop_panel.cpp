@@ -41,7 +41,7 @@
 #include "drive_widget.h"
 #include "teleop_panel.h"
 
-namespace rviz_plugin_tutorials
+namespace rviz_urdf_composer
 {
 
 // BEGIN_TUTORIAL
@@ -64,7 +64,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   // Next we lay out the "output topic" text entry field using a
   // QLabel and a QLineEdit in a QHBoxLayout.
   QHBoxLayout* topic_layout = new QHBoxLayout;
-  topic_layout->addWidget( new QLabel( "Output Topic:" ));
+  topic_layout->addWidget( new QLabel( "Output1 Topic:" ));
   output_topic_editor_ = new QLineEdit;
   topic_layout->addWidget( output_topic_editor_ );
 
@@ -98,6 +98,15 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   // Make the control widget start disabled, since we don't start with an output topic.
   drive_widget_->setEnabled( false );
+
+  /*QComboBox* comboBox = new QComboBox(this);
+
+  // Add items to the QComboBox
+  comboBox->addItem("Item 1");
+  comboBox->addItem("Item 2");
+  comboBox->addItem("Item 3");*/
+
+
 }
 
 // setVel() is connected to the DriveWidget's output, which is sent
@@ -196,5 +205,5 @@ void TeleopPanel::load( const rviz::Config& config )
 // loadable by pluginlib::ClassLoader must have these two lines
 // compiled in its .cpp file, outside of any namespace scope.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(rviz_plugin_tutorials::TeleopPanel,rviz::Panel )
+PLUGINLIB_EXPORT_CLASS(rviz_urdf_composer::TeleopPanel,rviz::Panel )
 // END_TUTORIAL

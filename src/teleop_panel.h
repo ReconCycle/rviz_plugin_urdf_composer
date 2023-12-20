@@ -37,7 +37,7 @@
 
 class QLineEdit;
 
-namespace rviz_plugin_tutorials
+namespace rviz_urdf_composer
 {
 
 class DriveWidget;
