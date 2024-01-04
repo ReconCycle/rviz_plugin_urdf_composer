@@ -35,6 +35,13 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QTimer>
+#include <QComboBox>
+#include <QString>
+#include <QFileDialog>
+#include <QPushButton>
+
+#include <iostream>
+#include <fstream>
 
 #include <geometry_msgs/Twist.h>
 
@@ -68,13 +75,42 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   output_topic_editor_ = new QLineEdit;
   topic_layout->addWidget( output_topic_editor_ );
 
+  QComboBox* comboBox = new QComboBox(this);
+
+  // Get the list of parameters in the global namespace
+  std::vector<std::string> param_names;
+  nh_.getParamNames(param_names);
+ 
+
+  for( std::string param_name : param_names )
+  { 
+    QString param_name_q = QString::fromStdString(param_name);
+    comboBox->addItem(param_name_q);
+  }
+
+  // Add items to the QComboBox
+ 
+  comboBox->addItem("Item 2");
+  comboBox->addItem("Item 3");/**/
+
+
+
+
   // Then create the control widget.
   drive_widget_ = new DriveWidget;
+
+
+
+  QPushButton *button = new QPushButton("Choose File", this);
+
+  connect(button, &QPushButton::clicked, this, &TeleopPanel::openFileDialog);
+
 
   // Lay out the topic field above the control widget.
   QVBoxLayout* layout = new QVBoxLayout;
   layout->addLayout( topic_layout );
   layout->addWidget( drive_widget_ );
+  layout->addWidget( comboBox );
   setLayout( layout );
 
   // Create a timer for sending the output.  Motor controllers want to
@@ -99,12 +135,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   // Make the control widget start disabled, since we don't start with an output topic.
   drive_widget_->setEnabled( false );
 
-  /*QComboBox* comboBox = new QComboBox(this);
 
-  // Add items to the QComboBox
-  comboBox->addItem("Item 1");
-  comboBox->addItem("Item 2");
-  comboBox->addItem("Item 3");*/
 
 
 }
@@ -113,6 +144,33 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 // whenever it changes due to a mouse event.  This just records the
 // values it is given.  The data doesn't actually get sent until the
 // next timer callback.
+
+
+void TeleopPanel::openFileDialog() {
+
+      QString fileName = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "All Files (*.*)");
+
+      urdf_path_assembly_ = fileName.toStdString();
+
+      
+      std::ifstream file(urdf_path_assembly_);
+      if (!file.is_open()) {
+          std::cerr << "Error: Unable to open file " << urdf_path_assembly_ << std::endl;
+          
+      }
+
+      // Use the constructor of std::string to load the file content
+      std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+      if (!fileName.isEmpty()) {
+          //qDebug() << "Selected file: " << fileName;
+          // Do something with the selected file...
+      }
+
+      nh_.setParam("test123",fileContent);
+  }
+
+
 void TeleopPanel::setVel( float lin, float ang )
 {
   linear_velocity_ = lin;
@@ -165,6 +223,8 @@ void TeleopPanel::setTopic( const QString& new_topic )
 // publisher is ready with a valid topic name.
 void TeleopPanel::sendVel()
 {
+
+
   if( ros::ok() && velocity_publisher_ )
   {
     geometry_msgs::Twist msg;

@@ -73,6 +73,9 @@ public:
 
   // Next come a couple of public Qt slots.
 public Q_SLOTS:
+
+  void openFileDialog();
+
   // The control area, DriveWidget, sends its output to a Qt signal
   // for ease of re-use, so here we declare a Qt slot to receive it.
   void setVel( float linear_velocity_, float angular_velocity_ );
@@ -115,6 +118,10 @@ protected:
   // The latest velocity values from the drive widget.
   float linear_velocity_;
   float angular_velocity_;
+
+  std::string urdf_path_assembly_;
+  std::string urdf_path_new_component_;
+
   // END_TUTORIAL
 };
 
