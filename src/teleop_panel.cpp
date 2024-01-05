@@ -90,17 +90,63 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 
   // Loading base urdf
+  QPushButton *button_base = new QPushButton("Choose base urdf file", this);
 
-  QPushButton *button = new QPushButton("Choose File", this);
-  QHBoxLayout* base_urdf_layout = new QHBoxLayout;
-  base_urdf_layout->addWidget( button );
-  connect(button, &QPushButton::clicked, this, &TeleopPanel::openFileDialog);
 
+  QHBoxLayout* chose_base_urdf_layout = new QHBoxLayout;
+  chose_base_urdf_layout->addWidget( button_base );
+  chose_base_urdf_layout->addWidget( new QLabel( "Not chosen yet" ));
+
+  QComboBox* chose_base_urdf_tf_combo_box = new QComboBox(this);
+  chose_base_urdf_tf_combo_box->addItem("urdf not chosen yet");
+
+  QHBoxLayout* chose_base_urdf_tf_layout = new QHBoxLayout;
+  chose_base_urdf_tf_layout->addWidget( new QLabel( "Chose base tf:" ));
+  chose_base_urdf_tf_layout->addWidget( chose_base_urdf_tf_combo_box );
+  
+  QVBoxLayout* base_urdf_layout = new QVBoxLayout;
+  base_urdf_layout->addWidget( new QLabel( "DEFINITION OF BASE URDF:" ));
+  base_urdf_layout->addLayout(chose_base_urdf_layout);
+  base_urdf_layout->addLayout(chose_base_urdf_tf_layout);
+
+
+  //Loading components
+  QPushButton *button_component = new QPushButton("Choose component urdf file", this);
+
+  QHBoxLayout* chose_component_urdf_layout = new QHBoxLayout;
+  chose_component_urdf_layout->addWidget( button_component );
+  chose_component_urdf_layout->addWidget( new QLabel( "Not chosen yet" ));
+
+  QComboBox* chose_component_urdf_tf_combo_box = new QComboBox(this);
+  chose_component_urdf_tf_combo_box->addItem("urdf not chosen yet");
+
+  QHBoxLayout* chose_component_urdf_tf_layout = new QHBoxLayout;
+  chose_component_urdf_tf_layout->addWidget( new QLabel( "Chose base tf:" ));
+  chose_component_urdf_tf_layout->addWidget( chose_component_urdf_tf_combo_box );
+
+  QVBoxLayout* component_urdf_layout = new QVBoxLayout;
+  component_urdf_layout->addWidget( new QLabel( "DEFINITION OF COMPONENT URDF:" ));
+  component_urdf_layout->addLayout(chose_component_urdf_layout);
+  component_urdf_layout->addLayout(chose_component_urdf_tf_layout);
+
+
+
+  connect(button_base, &QPushButton::clicked, this, &TeleopPanel::openFileDialog);
+  connect(button_component, &QPushButton::clicked, this, &TeleopPanel::openFileDialog);
+
+  QPushButton *button_save_urdf = new QPushButton("save urdf", this);
+
+  QHBoxLayout* save_urdf_layout = new QHBoxLayout;
+  save_urdf_layout->addWidget( button_save_urdf );
 
   // Lay out the topic field above the control widget.
   QVBoxLayout* layout = new QVBoxLayout;
   //layout->addLayout( topic_layout );
   layout->addLayout( base_urdf_layout );
+  layout->addLayout( component_urdf_layout );
+  layout->addLayout( save_urdf_layout );
+
+
   layout->addWidget( comboBox );
   setLayout( layout );
 
