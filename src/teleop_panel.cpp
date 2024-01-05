@@ -43,12 +43,11 @@
 #include <iostream>
 #include <fstream>
 
-#include <geometry_msgs/Twist.h>
 
-#include "drive_widget.h"
+
+
 #include "teleop_panel.h"
 
-#include "robot_state_publisher/robot_state_publisher.h"
 
 namespace rviz_urdf_composer
 {
@@ -221,6 +220,8 @@ void TeleopPanel::openFileDialog() {
 
 
     state_publisher_ = std::make_shared<robot_state_publisher::RobotStatePublisher>(tree, assembly_urdf_model_);
+
+    state_publisher_.segments_fixed_;
     assembly_urdf_model_ready_ = true;
 
     bool use_tf_static{true};

@@ -40,12 +40,13 @@
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 
+#include "gui_robot_state_publisher.h"
+
 class QLineEdit;
 
 namespace rviz_urdf_composer
 {
 
-class DriveWidget;
 
 // BEGIN_TUTORIAL
 // Here we declare our new subclass of rviz::Panel.  Every panel which
