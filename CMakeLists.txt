@@ -11,6 +11,7 @@ project(rviz_plugin_urdf_composer)
 
 
 find_package(catkin REQUIRED COMPONENTS rviz)
+find_package(catkin REQUIRED COMPONENTS robot_state_publisher)
 catkin_package()
 
 

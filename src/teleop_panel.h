@@ -35,6 +35,11 @@
 # include <rviz/panel.h>
 #endif
 
+
+#include "robot_state_publisher/robot_state_publisher.h"
+#include <kdl/tree.hpp>
+#include <kdl_parser/kdl_parser.hpp>
+
 class QLineEdit;
 
 namespace rviz_urdf_composer
@@ -71,58 +76,42 @@ public:
   virtual void load( const rviz::Config& config );
   virtual void save( rviz::Config config ) const;
 
+  bool parseURDFfile(std::string urdf_string);
+
   // Next come a couple of public Qt slots.
 public Q_SLOTS:
 
   void openFileDialog();
 
-  // The control area, DriveWidget, sends its output to a Qt signal
-  // for ease of re-use, so here we declare a Qt slot to receive it.
-  void setVel( float linear_velocity_, float angular_velocity_ );
-
-  // In this example setTopic() does not get connected to any signal
-  // (it is called directly), but it is easy to define it as a public
-  // slot instead of a private function in case it would be useful to
-  // some other user.
-  void setTopic( const QString& topic );
 
   // Here we declare some internal slots.
 protected Q_SLOTS:
   // sendvel() publishes the current velocity values to a ROS
   // topic.  Internally this is connected to a timer which calls it 10
   // times per second.
-  void sendVel();
+  void sendTFs();
 
-  // updateTopic() reads the topic name from the QLineEdit and calls
-  // setTopic() with the result.
-  void updateTopic();
 
   // Then we finish up with protected member variables.
 protected:
-  // The control-area widget which turns mouse events into command
-  // velocities.
-  DriveWidget* drive_widget_;
 
-  // One-line text editor for entering the outgoing ROS topic name.
-  QLineEdit* output_topic_editor_;
 
-  // The current name of the output topic.
-  QString output_topic_;
-
-  // The ROS publisher for the command velocity.
-  ros::Publisher velocity_publisher_;
 
   // The ROS node handle.
   ros::NodeHandle nh_;
 
-  // The latest velocity values from the drive widget.
-  float linear_velocity_;
-  float angular_velocity_;
 
   std::string urdf_path_assembly_;
   std::string urdf_path_new_component_;
 
-  // END_TUTORIAL
+  urdf::Model assembly_urdf_model_;
+  bool assembly_urdf_model_ready_{false};
+  std::vector<std::string> assembly_joint_names_;
+
+  std::shared_ptr<robot_state_publisher::RobotStatePublisher> state_publisher_;
+
+
+
 };
 
 } // end namespace rviz_plugin_tutorials

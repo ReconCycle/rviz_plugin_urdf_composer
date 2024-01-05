@@ -48,6 +48,8 @@
 #include "drive_widget.h"
 #include "teleop_panel.h"
 
+#include "robot_state_publisher/robot_state_publisher.h"
+
 namespace rviz_urdf_composer
 {
 
@@ -65,15 +67,13 @@ namespace rviz_urdf_composer
 // publishing.
 TeleopPanel::TeleopPanel( QWidget* parent )
   : rviz::Panel( parent )
-  , linear_velocity_( 0 )
-  , angular_velocity_( 0 )
 {
   // Next we lay out the "output topic" text entry field using a
   // QLabel and a QLineEdit in a QHBoxLayout.
-  QHBoxLayout* topic_layout = new QHBoxLayout;
+  /*QHBoxLayout* topic_layout = new QHBoxLayout;
   topic_layout->addWidget( new QLabel( "Output1 Topic:" ));
   output_topic_editor_ = new QLineEdit;
-  topic_layout->addWidget( output_topic_editor_ );
+  topic_layout->addWidget( output_topic_editor_ );*/
 
   QComboBox* comboBox = new QComboBox(this);
 
@@ -88,28 +88,19 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     comboBox->addItem(param_name_q);
   }
 
-  // Add items to the QComboBox
- 
-  comboBox->addItem("Item 2");
-  comboBox->addItem("Item 3");/**/
 
-
-
-
-  // Then create the control widget.
-  drive_widget_ = new DriveWidget;
-
-
+  // Loading base urdf
 
   QPushButton *button = new QPushButton("Choose File", this);
-
+  QHBoxLayout* base_urdf_layout = new QHBoxLayout;
+  base_urdf_layout->addWidget( button );
   connect(button, &QPushButton::clicked, this, &TeleopPanel::openFileDialog);
 
 
   // Lay out the topic field above the control widget.
   QVBoxLayout* layout = new QVBoxLayout;
-  layout->addLayout( topic_layout );
-  layout->addWidget( drive_widget_ );
+  //layout->addLayout( topic_layout );
+  layout->addLayout( base_urdf_layout );
   layout->addWidget( comboBox );
   setLayout( layout );
 
@@ -125,15 +116,12 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   QTimer* output_timer = new QTimer( this );
 
   // Next we make signal/slot connections.
-  connect( drive_widget_, SIGNAL( outputVelocity( float, float )), this, SLOT( setVel( float, float )));
-  connect( output_topic_editor_, SIGNAL( editingFinished() ), this, SLOT( updateTopic() ));
-  connect( output_timer, SIGNAL( timeout() ), this, SLOT( sendVel() ));
+  //connect( output_topic_editor_, SIGNAL( editingFinished() ), this, SLOT( updateTopic() ));
+  connect( output_timer, SIGNAL( timeout() ), this, SLOT( sendTFs() ));
 
   // Start the timer.
-  output_timer->start( 100 );
+  output_timer->start(1000);
 
-  // Make the control widget start disabled, since we don't start with an output topic.
-  drive_widget_->setEnabled( false );
 
 
 
@@ -148,116 +136,90 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 void TeleopPanel::openFileDialog() {
 
-      QString fileName = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "All Files (*.*)");
+    QString fileName = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "All Files (*.*)");
 
-      urdf_path_assembly_ = fileName.toStdString();
+    urdf_path_assembly_ = fileName.toStdString();
 
-      
-      std::ifstream file(urdf_path_assembly_);
-      if (!file.is_open()) {
-          std::cerr << "Error: Unable to open file " << urdf_path_assembly_ << std::endl;
-          
-      }
-
-      // Use the constructor of std::string to load the file content
-      std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-      if (!fileName.isEmpty()) {
-          //qDebug() << "Selected file: " << fileName;
-          // Do something with the selected file...
-      }
-
-      nh_.setParam("test123",fileContent);
-  }
-
-
-void TeleopPanel::setVel( float lin, float ang )
-{
-  linear_velocity_ = lin;
-  angular_velocity_ = ang;
-}
-
-// Read the topic name from the QLineEdit and call setTopic() with the
-// results.  This is connected to QLineEdit::editingFinished() which
-// fires when the user presses Enter or Tab or otherwise moves focus
-// away.
-void TeleopPanel::updateTopic()
-{
-  setTopic( output_topic_editor_->text() );
-}
-
-// Set the topic name we are publishing to.
-void TeleopPanel::setTopic( const QString& new_topic )
-{
-  // Only take action if the name has changed.
-  if( new_topic != output_topic_ )
-  {
-    output_topic_ = new_topic;
-    // If the topic is the empty string, don't publish anything.
-    if( output_topic_ == "" )
-    {
-      velocity_publisher_.shutdown();
+    
+    std::ifstream file(urdf_path_assembly_);
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open file " << urdf_path_assembly_ << std::endl;
+        
     }
-    else
-    {
-      // The old ``velocity_publisher_`` is destroyed by this assignment,
-      // and thus the old topic advertisement is removed.  The call to
-      // nh_advertise() says we want to publish data on the new topic
-      // name.
-      velocity_publisher_ = nh_.advertise<geometry_msgs::Twist>( output_topic_.toStdString(), 1 );
+
+    // Use the constructor of std::string to load the file content
+    std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    if (!fileName.isEmpty()) {
+        //qDebug() << "Selected file: " << fileName;
+        // Do something with the selected file...
     }
-    // rviz::Panel defines the configChanged() signal.  Emitting it
-    // tells RViz that something in this panel has changed that will
-    // affect a saved config file.  Ultimately this signal can cause
-    // QWidget::setWindowModified(true) to be called on the top-level
-    // rviz::VisualizationFrame, which causes a little asterisk ("*")
-    // to show in the window's title bar indicating unsaved changes.
-    Q_EMIT configChanged();
+
+    nh_.setParam("/assembly_urdf_model/robot_description",fileContent);
+    assembly_urdf_model_.initString(fileContent);
+
+    KDL::Tree tree;
+    if (!kdl_parser::treeFromUrdfModel(assembly_urdf_model_, tree)) {
+      ROS_ERROR("Failed to extract kdl tree from xml robot description");
+  
+    }
+
+    // Get the names of all joints in the robot model
+
+    assembly_joint_names_ = std::vector<std::string> {};
+    for (const auto& joint_pair : assembly_urdf_model_.joints_) {
+        const urdf::Joint& joint = *joint_pair.second;
+        assembly_joint_names_.push_back(joint.name);
+    }
+
+
+
+    state_publisher_ = std::make_shared<robot_state_publisher::RobotStatePublisher>(tree, assembly_urdf_model_);
+    assembly_urdf_model_ready_ = true;
+
+    bool use_tf_static{true};
+    state_publisher_->publishFixedTransforms( "assembly_urdf_model", use_tf_static);
   }
 
-  // Gray out the control widget when the output topic is empty.
-  drive_widget_->setEnabled( output_topic_ != "" );
-}
 
-// Publish the control velocities if ROS is not shutting down and the
-// publisher is ready with a valid topic name.
-void TeleopPanel::sendVel()
+void TeleopPanel::sendTFs()
 {
 
+  ROS_INFO("TREST");
 
-  if( ros::ok() && velocity_publisher_ )
+  if(assembly_urdf_model_ready_)
   {
-    geometry_msgs::Twist msg;
-    msg.linear.x = linear_velocity_;
-    msg.linear.y = 0;
-    msg.linear.z = 0;
-    msg.angular.x = 0;
-    msg.angular.y = 0;
-    msg.angular.z = angular_velocity_;
-    velocity_publisher_.publish( msg );
+    std::map<std::string, double> joint_positions;
+
+    
+
+    for (std::string joint_name : assembly_joint_names_) {
+      joint_positions.insert(std::make_pair(joint_name,0));
+    }
+
+    state_publisher_->publishTransforms(joint_positions, ros::Time::now(), "assembly_urdf_model"); //
   }
 }
 
-// Save all configuration data from this panel to the given
-// Config object.  It is important here that you call save()
-// on the parent class so the class id and panel name get saved.
 void TeleopPanel::save( rviz::Config config ) const
 {
-  rviz::Panel::save( config );
-  config.mapSetValue( "Topic", output_topic_ );
+  /*rviz::Panel::save( config );
+  config.mapSetValue( "Topic", output_topic_ );*/
 }
 
 // Load all configuration data for this panel from the given Config object.
 void TeleopPanel::load( const rviz::Config& config )
 {
-  rviz::Panel::load( config );
+ /*rviz::Panel::load( config );
   QString topic;
   if( config.mapGetString( "Topic", &topic ))
   {
-    output_topic_editor_->setText( topic );
-    updateTopic();
-  }
+    //output_topic_editor_->setText( topic );
+    //updateTopic();
+  }*/
 }
+
+
 
 } // end namespace rviz_plugin_tutorials
 
