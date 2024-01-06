@@ -36,26 +36,36 @@
 #endif
 
 
+
+#include <QVBoxLayout>
+
 #include "robot_state_publisher/robot_state_publisher.h"
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 
 #include "gui_robot_state_publisher.h"
 
-class QLineEdit;
+
 
 namespace rviz_urdf_composer
 {
 
 
-// BEGIN_TUTORIAL
-// Here we declare our new subclass of rviz::Panel.  Every panel which
-// can be added via the Panels/Add_New_Panel menu is a subclass of
-// rviz::Panel.
-//
-// TeleopPanel will show a text-entry field to set the output topic
-// and a 2D control area.  The 2D control area is implemented by the
-// DriveWidget class, and is described there.
+
+struct UrdfManager
+{
+
+  QVBoxLayout* qt_control_layout;
+
+  std::shared_ptr<GuiRobotStatePublisher> state_publisher;
+  std::string tf_prefix;
+  bool ready{false};
+  std::string urdf_display_name;
+  std::vector<std::string> joint_names;
+  geometry_msgs::TransformStamped pose_transform;
+};
+
+
 class TeleopPanel: public rviz::Panel
 {
 // This class uses Qt slots and is a subclass of QObject, so it needs
@@ -77,7 +87,14 @@ public:
   virtual void load( const rviz::Config& config );
   virtual void save( rviz::Config config ) const;
 
+  void loadURDFtoParam(std::string param_name_namespace);
+
   bool parseURDFfile(std::string urdf_string);
+
+
+
+  bool setEnabledDisplay(std::string name, bool enabled);
+  
 
   // Next come a couple of public Qt slots.
 public Q_SLOTS:
@@ -101,16 +118,17 @@ protected:
   // The ROS node handle.
   ros::NodeHandle nh_;
 
+  
+
 
   std::string urdf_path_assembly_;
   std::string urdf_path_new_component_;
 
-  urdf::Model assembly_urdf_model_;
-  bool assembly_urdf_model_ready_{false};
-  std::vector<std::string> assembly_joint_names_;
 
-  std::shared_ptr<robot_state_publisher::RobotStatePublisher> state_publisher_;
 
+  std::map<std::string, UrdfManager> urdf_managers_;
+
+  tf2_ros::TransformBroadcaster tf_broadcaster_;
 
 
 };

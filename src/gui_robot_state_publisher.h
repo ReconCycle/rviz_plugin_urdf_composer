@@ -19,6 +19,14 @@ namespace rviz_urdf_composer
 class GuiRobotStatePublisher: public robot_state_publisher::RobotStatePublisher
 {
 
+    
+    public:
+
+        GuiRobotStatePublisher(const KDL::Tree& tree, const urdf::Model& model = urdf::Model()); 
+
+        std::vector<std::string> getSegmentList();
+        std::vector<std::string> getTfNames();
+
 };
 // END_TUTORIAL
 
