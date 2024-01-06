@@ -45,6 +45,16 @@
 
 #include "gui_robot_state_publisher.h"
 
+#include <QPainter>
+#include <QLineEdit>
+
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QTimer>
+
+#include <QString>
+#include <QFileDialog>
+#include <QPushButton>
 
 
 namespace rviz_urdf_composer
@@ -57,6 +67,7 @@ struct UrdfManager
 
   QVBoxLayout* qt_control_layout;
   QComboBox* tf_combo_box;
+  QPushButton* load_urdf_button;
 
   std::shared_ptr<GuiRobotStatePublisher> state_publisher;
   std::string tf_prefix;

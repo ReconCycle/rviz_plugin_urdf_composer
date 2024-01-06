@@ -29,16 +29,6 @@
 
 #include <stdio.h>
 
-#include <QPainter>
-#include <QLineEdit>
-
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QTimer>
-
-#include <QString>
-#include <QFileDialog>
-#include <QPushButton>
 
 #include <iostream>
 #include <fstream>
@@ -75,6 +65,9 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   topic_layout->addWidget( new QLabel( "Output1 Topic:" ));
   output_topic_editor_ = new QLineEdit;
   topic_layout->addWidget( output_topic_editor_ );*/
+
+  QVBoxLayout* root_layout = new QVBoxLayout;
+
   UrdfManager urdf_manager_assembly;
   UrdfManager urdf_manager_component;
 
@@ -101,61 +94,45 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   }
 
 
-  // Loading base urdf
-  QPushButton *button_base = new QPushButton("Choose base urdf file", this);
 
 
-  QHBoxLayout* chose_base_urdf_layout = new QHBoxLayout;
-  chose_base_urdf_layout->addWidget( button_base );
-  chose_base_urdf_layout->addWidget( new QLabel( "Not chosen yet" ));
-
-  QComboBox*  chose_base_urdf_tf_combo_box = new QComboBox(this);
-
-  chose_base_urdf_tf_combo_box->addItem("urdf not chosen yet");
-
-  QHBoxLayout* chose_base_urdf_tf_layout = new QHBoxLayout;
-  chose_base_urdf_tf_layout->addWidget( new QLabel( "Chose base tf:" ));
-  chose_base_urdf_tf_layout->addWidget( chose_base_urdf_tf_combo_box );
-
-  urdf_managers_["assembly_urdf_model"].qt_control_layout = new QVBoxLayout;
-  urdf_managers_["assembly_urdf_model"].tf_combo_box = chose_base_urdf_tf_combo_box;
-
-  QVBoxLayout* base_urdf_layout = urdf_managers_["assembly_urdf_model"].qt_control_layout; 
-
-  base_urdf_layout->addWidget( new QLabel( "DEFINITION OF BASE URDF:" ));
-  base_urdf_layout->addLayout(chose_base_urdf_layout);
-  base_urdf_layout->addLayout(chose_base_urdf_tf_layout);
+  for(std::string urdf_namespace : std::vector<std::string>{"assembly_urdf_model","component_urdf_model"})
+  {
+    
+    urdf_managers_[urdf_namespace].load_urdf_button  = new QPushButton("Choose urdf file", this);
+    connect(urdf_managers_[urdf_namespace].load_urdf_button, &QPushButton::clicked, this, [this, urdf_namespace]{loadURDFtoParam(urdf_namespace );});
+    QComboBox*  chose_urdf_tf_combo_box = new QComboBox(this);
+    chose_urdf_tf_combo_box->addItem("urdf not chosen yet");
+    urdf_managers_[urdf_namespace].tf_combo_box = chose_urdf_tf_combo_box;
+    urdf_managers_[urdf_namespace].qt_control_layout = new QVBoxLayout;
 
 
-  //Loading components
-  QPushButton *button_component = new QPushButton("Choose component urdf file", this);
+  }
 
-  QHBoxLayout* chose_component_urdf_layout = new QHBoxLayout;
-  chose_component_urdf_layout->addWidget( button_component );
-  chose_component_urdf_layout->addWidget( new QLabel( "Not chosen yet" ));
+  urdf_managers_["assembly_urdf_model"].qt_control_layout->addWidget( new QLabel( "DEFINITION OF BASE URDF:" ));
+  urdf_managers_["component_urdf_model"].qt_control_layout->addWidget( new QLabel( "DEFINITION OF COMPONENT URDF:" ));
 
-  QComboBox* chose_urdf_tf_combo_box = new QComboBox(this);
-  chose_urdf_tf_combo_box->setObjectName("combo_box_tf");
-  chose_urdf_tf_combo_box->addItem("urdf not chosen yet");
+  for(std::string urdf_namespace : std::vector<std::string>{"assembly_urdf_model","component_urdf_model"})
+  {
+    
+    QHBoxLayout* chose_urdf_layout = new QHBoxLayout;
+    chose_urdf_layout->addWidget( urdf_managers_[urdf_namespace].load_urdf_button );
+    chose_urdf_layout->addWidget( new QLabel( "Not chosen yet" ));
+
+    QHBoxLayout* chose_urdf_tf_layout = new QHBoxLayout;
+    chose_urdf_tf_layout->addWidget( new QLabel( "Chose base tf:" ));
+    chose_urdf_tf_layout->addWidget( urdf_managers_[urdf_namespace].tf_combo_box );
+
+
+    urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_layout);
+    urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_tf_layout);
+
+    root_layout->addLayout( urdf_managers_[urdf_namespace].qt_control_layout );
+
+  }
+
+
   
-
-  QHBoxLayout* chose_component_urdf_tf_layout = new QHBoxLayout;
-  chose_component_urdf_tf_layout->addWidget( new QLabel( "Chose base tf:" ));
-  chose_component_urdf_tf_layout->addWidget( chose_urdf_tf_combo_box );
-
-  QVBoxLayout* component_urdf_layout = new QVBoxLayout;
-  component_urdf_layout->addWidget( new QLabel( "DEFINITION OF COMPONENT URDF:" ));
-  component_urdf_layout->addLayout(chose_component_urdf_layout);
-  component_urdf_layout->addLayout(chose_component_urdf_tf_layout);
-
-
-
-
-  connect(button_base, &QPushButton::clicked, this,[this]{loadURDFtoParam("assembly_urdf_model");});
-  connect(button_component, &QPushButton::clicked, this, [this]{loadURDFtoParam("component_urdf_model");});
-
-
-
 
   QPushButton *button_save_urdf = new QPushButton("save urdf", this);
 
@@ -163,15 +140,14 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   save_urdf_layout->addWidget( button_save_urdf );
 
   // Lay out the topic field above the control widget.
-  QVBoxLayout* layout = new QVBoxLayout;
+
   //layout->addLayout( topic_layout );
-  layout->addLayout( base_urdf_layout );
-  layout->addLayout( component_urdf_layout );
-  layout->addLayout( save_urdf_layout );
+
+  root_layout->addLayout( save_urdf_layout );
 
 
-  layout->addWidget( comboBox );
-  setLayout( layout );
+  root_layout->addWidget( comboBox );
+  setLayout( root_layout );
 
   // Create a timer for sending the output.  Motor controllers want to
   // be reassured frequently that they are doing the right thing, so
