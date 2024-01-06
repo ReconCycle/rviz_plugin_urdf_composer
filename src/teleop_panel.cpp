@@ -101,11 +101,20 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     
     urdf_managers_[urdf_namespace].load_urdf_button  = new QPushButton("Choose urdf file", this);
     connect(urdf_managers_[urdf_namespace].load_urdf_button, &QPushButton::clicked, this, [this, urdf_namespace]{loadURDFtoParam(urdf_namespace );});
+
     QComboBox*  chose_urdf_tf_combo_box = new QComboBox(this);
     chose_urdf_tf_combo_box->addItem("urdf not chosen yet");
     urdf_managers_[urdf_namespace].tf_combo_box = chose_urdf_tf_combo_box;
     urdf_managers_[urdf_namespace].qt_control_layout = new QVBoxLayout;
 
+
+    //Set TF
+    geometry_msgs::TransformStamped tf_transform;
+    tf_transform.transform.rotation.z = 1.0;
+    
+    tf_transform.header.frame_id = "map";//prefix_frame(tf_prefix, seg->second.root);
+    tf_transform.child_frame_id = "/" +  urdf_namespace +"/base" ;//prefix_frame(tf_prefix, seg->second.tip);
+    urdf_managers_[urdf_namespace].pose_transform = tf_transform;
 
   }
 
@@ -131,6 +140,9 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   }
 
+
+
+  connect(urdf_managers_["assembly_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedBase);
 
   
 
@@ -173,6 +185,22 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 }
 
+void TeleopPanel::onComboBoxIndexChangedBase(int index) {
+
+
+  QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
+  urdf_managers_["component_urdf_model"].pose_transform.header.frame_id = "/assembly_urdf_model/" + selectedItemText.toStdString();
+
+}
+
+void TeleopPanel::onComboBoxIndexChangedComponent(int index) {
+
+  QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
+
+
+
+
+}
 
 bool TeleopPanel::setEnabledDisplay(std::string name, bool enabled)
 {
@@ -308,10 +336,7 @@ void TeleopPanel::sendTFs()
 
 
       geometry_msgs::TransformStamped tf_transform = urdf_manager.pose_transform; //= tf2::kdlToTransform(seg->second.segment.pose(jnt->second));
-      tf_transform.transform.rotation.z = 1.0;
       tf_transform.header.stamp =  ros::Time::now();
-      tf_transform.header.frame_id = "map";//prefix_frame(tf_prefix, seg->second.root);
-      tf_transform.child_frame_id = "/" +  map_pair.first +"/base" ;//prefix_frame(tf_prefix, seg->second.tip);
       //tf_transforms.push_back(tf_transform);
       tf_broadcaster_.sendTransform(tf_transform);
 

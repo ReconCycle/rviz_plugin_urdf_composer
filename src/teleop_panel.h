@@ -108,6 +108,8 @@ public:
   bool parseURDFfile(std::string urdf_string);
 
   bool setEnabledDisplay(std::string name, bool enabled);
+  void onComboBoxIndexChangedBase(int index);
+  void onComboBoxIndexChangedComponent(int index); 
 
   QWidget* findWidgetByName1(const std::string& widgetName_str, QLayout* layout) ;
 
