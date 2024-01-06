@@ -80,6 +80,8 @@ struct UrdfManager
   std::vector<geometry_msgs::TransformStamped> pose_transforms;
   std::string root_segment_name;
 
+  KDL::Tree kdl_tree;
+
 };
 
 
@@ -117,6 +119,8 @@ public:
   void onComboBoxIndexChangedComponent(int index); 
 
   geometry_msgs::TransformStamped createInitTF(std::string parrent, std::string child);
+
+  bool updateComponentsTFs();
 
   QWidget* findWidgetByName1(const std::string& widgetName_str, QLayout* layout) ;
 

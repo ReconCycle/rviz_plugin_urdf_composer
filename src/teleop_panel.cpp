@@ -41,6 +41,15 @@
 #include <rviz/visualization_manager.h>
 #include <rviz/display_factory.h>
 #include <rviz/display_group.h>
+
+#include <kdl/chainfksolverpos_recursive.hpp>
+
+
+#include <kdl/frames.hpp>
+#include <tf2_kdl/tf2_kdl.h>
+#include <tf2/convert.h>
+//#include <tf2/LinearMath/Transform.h>
+
 namespace rviz_urdf_composer
 {
 
@@ -184,73 +193,6 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 }
 
-void TeleopPanel::onComboBoxIndexChangedBase(int index) {
-
-  QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
-  base_tf_name_ = "/assembly_urdf_model/" + selectedItemText.toStdString();
-  urdf_managers_["component_urdf_model"].pose_transforms.clear() ;
-  geometry_msgs::TransformStamped tf_transform = createInitTF(base_tf_name_, component_tf_name_ );
-  urdf_managers_["component_urdf_model"].pose_transforms.push_back(tf_transform) ;
-}
-
-
-
-void TeleopPanel::onComboBoxIndexChangedComponent(int index) {
-
-  QString selectedItemText = urdf_managers_["component_urdf_model"].tf_combo_box->currentText();
-
-  component_tf_name_ = "/component_urdf_model/" + selectedItemText.toStdString();
-
-  urdf_managers_["component_urdf_model"].pose_transforms.clear() ;
-  geometry_msgs::TransformStamped tf_transform = createInitTF(base_tf_name_, component_tf_name_ );
-  urdf_managers_["component_urdf_model"].pose_transforms.push_back(tf_transform) ;
-
-  ROS_INFO_STREAM("TREST: " << selectedItemText.toStdString());
-
-  /* geometry_msgs::TransformStamped tf_transform = createInitTF("map" , "/" +  param_name_namespace +  "/" + urdf_managers_[param_name_namespace].root_segment_name ); 
-
-  urdf_managers_[param_name_namespace].pose_transforms.clear();
-  urdf_managers_[param_name_namespace].pose_transforms.push_back(tf_transform);*/ 
-
-}
-
-geometry_msgs::TransformStamped TeleopPanel::createInitTF(std::string parrent, std::string child ) 
-{
-  geometry_msgs::TransformStamped tf_transform; 
-  tf_transform.transform.rotation.z = 1.0;
-  tf_transform.header.frame_id = parrent;//prefix_frame(tf_prefix, seg->second.root);
-  tf_transform.child_frame_id = child;//prefix_frame(tf_prefix, seg->second.tip);
-
-  return tf_transform;
-
-}
-
-bool TeleopPanel::setEnabledDisplay(std::string name, bool enabled)
-{
-     // Access all displays
-    //QList<rviz::Display*> displays = vis_manager_->getDisplayFactory()->getDisplays();
-
-    rviz::DisplayGroup * 	 displays =vis_manager_->getRootDisplayGroup();
-    int num_of_display = displays->numDisplays();
-    for(int i=0;i<num_of_display;i++)
-    { 
-      std::string panel_name = displays->getDisplayAt(i)->getName().toStdString();
-      if(panel_name == name)
-      {
-        displays->getDisplayAt(i)->setEnabled(enabled);
-        break;
-      }
-
-      //ROS_INFO_STREAM("dis: " << panel_name);
-    }
-    
-    return true;
-    //vis_manager_->getDisplayWrapper("RobotModelBase");//->getDisplay()->disable();
-    //vis_manager_->getDisplayWrapper("RobotModelBase");//->getDisplay()->enable();
-
-
-}
-
 void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
 {
 
@@ -299,6 +241,7 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
 
   urdf_managers_[param_name_namespace].tf_prefix = param_name_namespace;
 
+  urdf_managers_[param_name_namespace].kdl_tree = tree;
   // Get the names of all joints in the robot model
 
  std::vector<std::string> joint_names{};
@@ -341,6 +284,107 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
     combo_box->addItem(param_name_q);
   }
    // 
+}
+
+void TeleopPanel::onComboBoxIndexChangedBase(int index) {
+
+  QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
+  base_tf_name_ =  selectedItemText.toStdString();
+  updateComponentsTFs();
+}
+
+
+
+void TeleopPanel::onComboBoxIndexChangedComponent(int index) {
+
+  QString selectedItemText = urdf_managers_["component_urdf_model"].tf_combo_box->currentText();
+  component_tf_name_ = selectedItemText.toStdString();
+  updateComponentsTFs();
+
+}
+
+geometry_msgs::TransformStamped TeleopPanel::createInitTF(std::string parrent, std::string child ) 
+{
+  geometry_msgs::TransformStamped tf_transform; 
+  tf_transform.transform.rotation.w = 1.0;
+  tf_transform.header.frame_id = parrent;//prefix_frame(tf_prefix, seg->second.root);
+  tf_transform.child_frame_id = child;//prefix_frame(tf_prefix, seg->second.tip);
+
+  return tf_transform;
+
+}
+
+bool  TeleopPanel::updateComponentsTFs()
+{
+
+
+  urdf_managers_["component_urdf_model"].pose_transforms.clear() ;
+
+  geometry_msgs::TransformStamped tf_transform = createInitTF("/assembly_urdf_model/" + base_tf_name_, "intermidiate" );
+  ROS_INFO_STREAM("base: " << base_tf_name_);
+
+  geometry_msgs::TransformStamped tf_transform_intermidiate = createInitTF("intermidiate",  "/component_urdf_model/" + urdf_managers_["component_urdf_model"].root_segment_name); // component_tf_name_ 
+
+  KDL::Chain kdlChain = KDL::Chain();
+  ROS_INFO_STREAM("compnent: " << component_tf_name_);
+  urdf_managers_["component_urdf_model"].kdl_tree.getChain(urdf_managers_["component_urdf_model"].root_segment_name,component_tf_name_,kdlChain);
+  // Joint Angles
+  //
+  int number_of_joints = kdlChain.getNrOfJoints();
+   ROS_INFO_STREAM("joinst: " <<number_of_joints);
+  KDL::JntArray jointAngles = KDL::JntArray(number_of_joints);
+  for(int i = 0; i<number_of_joints; i++)
+  {
+    jointAngles(0) = 0.0;
+  }
+
+  //
+  // Perform Forward Kinematics
+  //
+
+  KDL::ChainFkSolverPos_recursive FKSolver = KDL::ChainFkSolverPos_recursive(kdlChain);
+  KDL::Frame eeFrame;
+  FKSolver.JntToCart(jointAngles, eeFrame);
+
+
+  geometry_msgs::TransformStamped tf_cal = tf2::kdlToTransform(eeFrame.Inverse());
+  /*ROS_INFO_STREAM("compnent: " << eeFrame.p[0]);
+   ROS_INFO_STREAM("compnent: " << eeFrame.p[1]);
+   ROS_INFO_STREAM("compnent: " << eeFrame.p[2]);
+
+    ROS_INFO_STREAM("compnent: " << tf_cal.transform.translation.x);*/
+
+  tf_transform_intermidiate.transform = tf_cal.transform ;
+  
+
+  urdf_managers_["component_urdf_model"].pose_transforms.push_back(tf_transform) ;
+  urdf_managers_["component_urdf_model"].pose_transforms.push_back(tf_transform_intermidiate) ;
+  return true;
+}
+bool TeleopPanel::setEnabledDisplay(std::string name, bool enabled)
+{
+     // Access all displays
+    //QList<rviz::Display*> displays = vis_manager_->getDisplayFactory()->getDisplays();
+
+    rviz::DisplayGroup * 	 displays =vis_manager_->getRootDisplayGroup();
+    int num_of_display = displays->numDisplays();
+    for(int i=0;i<num_of_display;i++)
+    { 
+      std::string panel_name = displays->getDisplayAt(i)->getName().toStdString();
+      if(panel_name == name)
+      {
+        displays->getDisplayAt(i)->setEnabled(enabled);
+        break;
+      }
+
+      //ROS_INFO_STREAM("dis: " << panel_name);
+    }
+    
+    return true;
+    //vis_manager_->getDisplayWrapper("RobotModelBase");//->getDisplay()->disable();
+    //vis_manager_->getDisplayWrapper("RobotModelBase");//->getDisplay()->enable();
+
+
 }
 
 
