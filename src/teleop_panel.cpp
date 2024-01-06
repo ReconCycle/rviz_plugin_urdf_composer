@@ -75,7 +75,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   urdf_manager_assembly.urdf_display_name = "RobotModelBase";
   urdf_manager_component.urdf_display_name = "RobotModelComponent";
 
-  urdf_manager_component.pose_transform.transform.translation.x = 3.0;
+
 
   urdf_managers_["component_urdf_model"] = urdf_manager_component;
   urdf_managers_["assembly_urdf_model"] = urdf_manager_assembly;
@@ -109,12 +109,11 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 
     //Set TF
-    geometry_msgs::TransformStamped tf_transform;
-    tf_transform.transform.rotation.z = 1.0;
     
-    tf_transform.header.frame_id = "map";//prefix_frame(tf_prefix, seg->second.root);
-    tf_transform.child_frame_id = "/" +  urdf_namespace +"/base" ;//prefix_frame(tf_prefix, seg->second.tip);
-    urdf_managers_[urdf_namespace].pose_transform = tf_transform;
+    
+    urdf_managers_[urdf_namespace].pose_transforms = std::vector<geometry_msgs::TransformStamped>{};
+    geometry_msgs::TransformStamped tf_transform = createInitTF("map" , "/" +  urdf_namespace +"/base" ); 
+    urdf_managers_[urdf_namespace].pose_transforms.push_back(tf_transform);
 
   }
 
@@ -143,7 +142,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 
   connect(urdf_managers_["assembly_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedBase);
-
+  connect(urdf_managers_["component_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedComponent);
   
 
   QPushButton *button_save_urdf = new QPushButton("save urdf", this);
@@ -177,7 +176,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   connect( output_timer, SIGNAL( timeout() ), this, SLOT( sendTFs() ));
 
   // Start the timer.
-  output_timer->start(1000);
+  output_timer->start(100);
 
 
 
@@ -187,18 +186,42 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 void TeleopPanel::onComboBoxIndexChangedBase(int index) {
 
-
   QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
-  urdf_managers_["component_urdf_model"].pose_transform.header.frame_id = "/assembly_urdf_model/" + selectedItemText.toStdString();
-
+  base_tf_name_ = "/assembly_urdf_model/" + selectedItemText.toStdString();
+  urdf_managers_["component_urdf_model"].pose_transforms.clear() ;
+  geometry_msgs::TransformStamped tf_transform = createInitTF(base_tf_name_, component_tf_name_ );
+  urdf_managers_["component_urdf_model"].pose_transforms.push_back(tf_transform) ;
 }
+
+
 
 void TeleopPanel::onComboBoxIndexChangedComponent(int index) {
 
-  QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
+  QString selectedItemText = urdf_managers_["component_urdf_model"].tf_combo_box->currentText();
 
+  component_tf_name_ = "/component_urdf_model/" + selectedItemText.toStdString();
 
+  urdf_managers_["component_urdf_model"].pose_transforms.clear() ;
+  geometry_msgs::TransformStamped tf_transform = createInitTF(base_tf_name_, component_tf_name_ );
+  urdf_managers_["component_urdf_model"].pose_transforms.push_back(tf_transform) ;
 
+  ROS_INFO_STREAM("TREST: " << selectedItemText.toStdString());
+
+  /* geometry_msgs::TransformStamped tf_transform = createInitTF("map" , "/" +  param_name_namespace +  "/" + urdf_managers_[param_name_namespace].root_segment_name ); 
+
+  urdf_managers_[param_name_namespace].pose_transforms.clear();
+  urdf_managers_[param_name_namespace].pose_transforms.push_back(tf_transform);*/ 
+
+}
+
+geometry_msgs::TransformStamped TeleopPanel::createInitTF(std::string parrent, std::string child ) 
+{
+  geometry_msgs::TransformStamped tf_transform; 
+  tf_transform.transform.rotation.z = 1.0;
+  tf_transform.header.frame_id = parrent;//prefix_frame(tf_prefix, seg->second.root);
+  tf_transform.child_frame_id = child;//prefix_frame(tf_prefix, seg->second.tip);
+
+  return tf_transform;
 
 }
 
@@ -250,7 +273,7 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
       // Do something with the selected file...
   }
 
-  std::string param_name = "/" + param_name_namespace +"/robot_desription";
+  std::string param_name = "/" + param_name_namespace + "/robot_desription";
 
   nh_.setParam(param_name,fileContent);
 
@@ -264,6 +287,13 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
     ROS_ERROR("Failed to extract kdl tree from xml robot description");
 
   }
+
+  urdf_managers_[param_name_namespace].root_segment_name =  GetTreeElementSegment(tree.getRootSegment()->second).getName();
+
+  geometry_msgs::TransformStamped tf_transform = createInitTF("map" , "/" +  param_name_namespace +  "/" + urdf_managers_[param_name_namespace].root_segment_name ); 
+
+  urdf_managers_[param_name_namespace].pose_transforms.clear();
+  urdf_managers_[param_name_namespace].pose_transforms.push_back(tf_transform);
 
   urdf_managers_[param_name_namespace].state_publisher = std::make_shared<GuiRobotStatePublisher>(tree, urdf_model);
 
@@ -302,10 +332,9 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
   ROS_INFO_STREAM("box");*/
 
 
-
   QComboBox* combo_box = urdf_managers_[param_name_namespace].tf_combo_box;
   combo_box->clear();
-  ROS_INFO_STREAM("box2");
+  //ROS_INFO_STREAM("box2");
   for(std::string name : tf_names)
   {
     QString param_name_q = QString::fromStdString(name);
@@ -318,8 +347,6 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
 
 void TeleopPanel::sendTFs()
 {
-
-  ROS_INFO("TREST");
 
   for(auto map_pair : urdf_managers_)
   {
@@ -334,11 +361,17 @@ void TeleopPanel::sendTFs()
 
       urdf_manager.state_publisher->publishTransforms(joint_positions, ros::Time::now(), urdf_manager.tf_prefix); 
 
+      std::vector<geometry_msgs::TransformStamped> out_tf = std::vector<geometry_msgs::TransformStamped>{};
 
-      geometry_msgs::TransformStamped tf_transform = urdf_manager.pose_transform; //= tf2::kdlToTransform(seg->second.segment.pose(jnt->second));
-      tf_transform.header.stamp =  ros::Time::now();
+      for(geometry_msgs::TransformStamped tf_transform : urdf_manager.pose_transforms)//= tf2::kdlToTransform(seg->second.segment.pose(jnt->second));
+      {
+        tf_transform.header.stamp =  ros::Time::now();
+        out_tf.push_back(tf_transform);
+      }
+      
+
       //tf_transforms.push_back(tf_transform);
-      tf_broadcaster_.sendTransform(tf_transform);
+      tf_broadcaster_.sendTransform(out_tf);
 
     }
 

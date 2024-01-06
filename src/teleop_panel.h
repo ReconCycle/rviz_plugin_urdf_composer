@@ -71,10 +71,15 @@ struct UrdfManager
 
   std::shared_ptr<GuiRobotStatePublisher> state_publisher;
   std::string tf_prefix;
+
   bool ready{false};
+
   std::string urdf_display_name;
+
   std::vector<std::string> joint_names;
-  geometry_msgs::TransformStamped pose_transform;
+  std::vector<geometry_msgs::TransformStamped> pose_transforms;
+  std::string root_segment_name;
+
 };
 
 
@@ -111,6 +116,8 @@ public:
   void onComboBoxIndexChangedBase(int index);
   void onComboBoxIndexChangedComponent(int index); 
 
+  geometry_msgs::TransformStamped createInitTF(std::string parrent, std::string child);
+
   QWidget* findWidgetByName1(const std::string& widgetName_str, QLayout* layout) ;
 
   template<typename widget_type>
@@ -143,6 +150,9 @@ protected:
 
   std::string urdf_path_assembly_;
   std::string urdf_path_new_component_;
+
+  std::string base_tf_name_;
+  std::string component_tf_name_;
 
 
 
