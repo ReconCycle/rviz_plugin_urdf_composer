@@ -35,7 +35,7 @@
 # include <rviz/panel.h>
 #endif
 
-
+#include <QComboBox>
 
 #include <QVBoxLayout>
 
@@ -56,6 +56,7 @@ struct UrdfManager
 {
 
   QVBoxLayout* qt_control_layout;
+  QComboBox* tf_combo_box;
 
   std::shared_ptr<GuiRobotStatePublisher> state_publisher;
   std::string tf_prefix;
@@ -72,6 +73,8 @@ class TeleopPanel: public rviz::Panel
 // the Q_OBJECT macro.
 Q_OBJECT
 public:
+
+  
   // QWidget subclass constructors usually take a parent widget
   // parameter (which usually defaults to 0).  At the same time,
   // pluginlib::ClassLoader creates instances by calling the default
@@ -83,6 +86,8 @@ public:
 
   // Now we declare overrides of rviz::Panel functions for saving and
   // loading data from the config file.  Here the data is the
+
+
   // topic name.
   virtual void load( const rviz::Config& config );
   virtual void save( rviz::Config config ) const;
@@ -91,10 +96,12 @@ public:
 
   bool parseURDFfile(std::string urdf_string);
 
-
-
   bool setEnabledDisplay(std::string name, bool enabled);
-  
+
+  QWidget* findWidgetByName1(const std::string& widgetName_str, QLayout* layout) ;
+
+  template<typename widget_type>
+  bool findWidgetByName(const std::string& widgetName_str, QLayout* layout, widget_type widget) ;
 
   // Next come a couple of public Qt slots.
 public Q_SLOTS:

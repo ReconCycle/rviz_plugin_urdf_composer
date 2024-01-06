@@ -31,7 +31,7 @@
 
 #include <QPainter>
 #include <QLineEdit>
-#include <QComboBox>
+
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QTimer>
@@ -118,7 +118,10 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   chose_base_urdf_tf_layout->addWidget( chose_base_urdf_tf_combo_box );
 
   urdf_managers_["assembly_urdf_model"].qt_control_layout = new QVBoxLayout;
+  urdf_managers_["assembly_urdf_model"].tf_combo_box = chose_base_urdf_tf_combo_box;
+
   QVBoxLayout* base_urdf_layout = urdf_managers_["assembly_urdf_model"].qt_control_layout; 
+
   base_urdf_layout->addWidget( new QLabel( "DEFINITION OF BASE URDF:" ));
   base_urdf_layout->addLayout(chose_base_urdf_layout);
   base_urdf_layout->addLayout(chose_base_urdf_tf_layout);
@@ -285,7 +288,26 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
 
   std::vector<std::string> tf_names = urdf_managers_[param_name_namespace].state_publisher->getTfNames();
 
-  urdf_managers_[param_name_namespace].qt_control_layout;
+  //QComboBox* combo_box;
+  /*ROS_INFO_STREAM("search");
+  //findWidgetByName<QComboBox*>("combo_box_tf", urdf_managers_[param_name_namespace].qt_control_layout, combo_box);
+  QWidget* widget = findWidgetByName1("combo_box_tf", urdf_managers_[param_name_namespace].qt_control_layout);
+  ROS_INFO_STREAM("found");
+
+  QComboBox* combo_box = widget->findChild<QComboBox*>("combo_box_tf");
+  ROS_INFO_STREAM("box");*/
+
+
+
+  QComboBox* combo_box = urdf_managers_[param_name_namespace].tf_combo_box;
+  combo_box->clear();
+  ROS_INFO_STREAM("box2");
+  for(std::string name : tf_names)
+  {
+    QString param_name_q = QString::fromStdString(name);
+    combo_box->addItem(param_name_q);
+  }
+   // 
 }
 
 
@@ -342,6 +364,48 @@ void TeleopPanel::load( const rviz::Config& config )
   }*/
 }
 
+QWidget* TeleopPanel::findWidgetByName1(const std::string& widgetName_str, QLayout* layout) {
+  QString widgetName = QString::fromStdString(widgetName_str);
+  
+  for (int i = 0; i < layout->count(); ++i) {
+      QLayoutItem* item = layout->itemAt(i);
+      if (item->widget() && item->widget()->objectName() == widgetName) {
+          return item->widget();
+      } else if (item->layout()) {
+          QWidget* widget = findWidgetByName1(widgetName_str, item->layout());
+          if (widget) {
+              return widget;
+          }
+      }
+  }
+  return nullptr;
+}
+
+
+template<typename widget_type>
+bool TeleopPanel::findWidgetByName(const std::string& widgetName_str, QLayout* layout, widget_type widget) 
+{
+  
+  QString widgetName = QString::fromStdString(widgetName_str);
+  
+  for (int i = 0; i < layout->count(); ++i) {
+      ROS_INFO_STREAM("Start" << i);
+      QLayoutItem* item = layout->itemAt(i);
+      if (item->widget() && item->widget()->objectName() == widgetName) {
+          ROS_INFO("hierh");
+          widget = layout->widget()->findChild<widget_type>(widgetName);
+          return true;
+      } else if (item->layout()) {
+          ROS_INFO_STREAM("newcall");
+          bool widget_present = findWidgetByName<widget_type>(widgetName_str, item->layout(), widget);
+          if (widget_present) {
+            return widget_present;
+          }
+      }
+  }
+
+  return false;
+}
 
 
 } // end namespace rviz_plugin_tutorials
