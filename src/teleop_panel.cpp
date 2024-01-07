@@ -308,6 +308,8 @@ void TeleopPanel::onComboBoxIndexChangedBase(int index) {
 
 void TeleopPanel::onComboBoxIndexChangedComponent(int index) {
 
+  setEnabledDisplay("MoveComponent",true);
+
   QString selectedItemText = urdf_managers_["component_urdf_model"].tf_combo_box->currentText();
   component_tf_name_ = selectedItemText.toStdString();
   updateComponentsTFs();

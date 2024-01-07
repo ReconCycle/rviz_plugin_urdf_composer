@@ -91,8 +91,8 @@ void TeleopPanel::frameCallback()
 // %EndTag(frameCallback)%
 
 // %Tag(processFeedback)%
-void TeleopPanel::processFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
-{/*
+void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)// )
+{
   std::ostringstream s;
   s << "Feedback from marker '" << feedback->marker_name << "' "
       << " / control '" << feedback->control_name << "'";
@@ -141,7 +141,7 @@ void TeleopPanel::processFeedback( const visualization_msgs::InteractiveMarkerFe
       break;
   }
 
-  interactive_marker_server_->applyChanges();*/
+  interactive_marker_server_->applyChanges(); /**/
 }
 // %EndTag(processFeedback)%
 
@@ -242,6 +242,7 @@ void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, con
   }
   ROS_INFO_STREAM("z");
   interactive_marker_server_->insert(int_marker);
+  interactive_marker_server_->setCallback(int_marker.name, std::bind(&TeleopPanel::processFeedback, this, std::placeholders::_1));//
    ROS_INFO_STREAM("2");
   //interactive_marker_server_->setCallback(int_marker.name, &TeleopPanel::processFeedback);
 

@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /InteractiveMarkers1
       Splitter Ratio: 0.49924126267433167
     Tree Height: 284
   - Class: rviz/Selection
@@ -96,11 +95,26 @@ Visualization Manager:
       Update Interval: 0
       Value: false
       Visual Enabled: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: false
+      Name: MoveComponent
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /basic_controls/update
+      Value: false
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        map:
+          Value: true
+        moving_frame:
+          Value: true
+        rotating_frame:
+          Value: true
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -108,17 +122,12 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        map:
+          moving_frame:
+            {}
+          rotating_frame:
+            {}
       Update Interval: 0
-      Value: true
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: true
-      Name: InteractiveMarkers
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: false
-      Update Topic: /basic_controls/update
       Value: true
   Enabled: true
   Global Options:
@@ -166,7 +175,7 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.43039894104003906
       Target Frame: <Fixed Frame>
-      Yaw: 5.2135701179504395
+      Yaw: 5.2035698890686035
     Saved: ~
 Window Geometry:
   Displays:
