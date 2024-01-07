@@ -9,9 +9,11 @@ project(rviz_plugin_urdf_composer)
 ## is used, also find other catkin packages
 #find_package(catkin REQUIRED)
 
-
+find_package(catkin REQUIRED COMPONENTS geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS tf2_geometry_msgs)
 find_package(catkin REQUIRED COMPONENTS rviz)
 find_package(catkin REQUIRED COMPONENTS robot_state_publisher)
+
 catkin_package()
 
 

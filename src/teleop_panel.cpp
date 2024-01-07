@@ -48,6 +48,8 @@
 #include <kdl/frames.hpp>
 #include <tf2_kdl/tf2_kdl.h>
 #include <tf2/convert.h>
+
+#include "marker_functions.h"
 //#include <tf2/LinearMath/Transform.h>
 
 namespace rviz_urdf_composer
@@ -178,6 +180,15 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   // QTimer is deleted by the QObject destructor when this TeleopPanel
   // object is destroyed.  Therefore we don't need to keep a pointer
   // to the timer.
+
+  // INTERACITE MARKER
+  interactive_marker_server_ = std::make_shared<interactive_markers::InteractiveMarkerServer>("basic_controls","",false );
+  tf2::Vector3 position = tf2::Vector3( 0, 0, 0);
+  make6DofMarker( false, visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D, position, true );
+  interactive_marker_server_->applyChanges();
+
+   ROS_INFO_STREAM("out");
+
   QTimer* output_timer = new QTimer( this );
 
   // Next we make signal/slot connections.
@@ -215,7 +226,7 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
       // Do something with the selected file...
   }
 
-  std::string param_name = "/" + param_name_namespace + "/robot_desription";
+  std::string param_name = "/" + param_name_namespace + "/robot_description";
 
   nh_.setParam(param_name,fileContent);
 
@@ -316,7 +327,6 @@ geometry_msgs::TransformStamped TeleopPanel::createInitTF(std::string parrent, s
 
 bool  TeleopPanel::updateComponentsTFs()
 {
-
 
   urdf_managers_["component_urdf_model"].pose_transforms.clear() ;
 
@@ -419,6 +429,8 @@ void TeleopPanel::sendTFs()
 
     }
 
+    frameCallback();
+
     //ROS_INFO_STREAM("TREST" << urdf_manager.qt_control_layout->count());
   }
 
@@ -484,6 +496,9 @@ bool TeleopPanel::findWidgetByName(const std::string& widgetName_str, QLayout* l
 
   return false;
 }
+
+
+
 
 
 } // end namespace rviz_plugin_tutorials

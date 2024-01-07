@@ -56,6 +56,10 @@
 #include <QFileDialog>
 #include <QPushButton>
 
+#include <interactive_markers/interactive_marker_server.h>
+
+
+#include <tf2/LinearMath/Vector3.h>
 
 namespace rviz_urdf_composer
 {
@@ -127,6 +131,18 @@ public:
   template<typename widget_type>
   bool findWidgetByName(const std::string& widgetName_str, QLayout* layout, widget_type widget) ;
 
+
+
+
+
+
+  visualization_msgs::Marker makeBox( visualization_msgs::InteractiveMarker &msg );
+  visualization_msgs::InteractiveMarkerControl& makeBoxControl( visualization_msgs::InteractiveMarker &msg );
+  void frameCallback();
+  void processFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void alignMarker( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
+  void make6DofMarker( bool fixed, unsigned int interaction_mode, const tf2::Vector3& position, bool show_6dof );
+
   // Next come a couple of public Qt slots.
 public Q_SLOTS:
 
@@ -158,6 +174,8 @@ protected:
   std::string base_tf_name_;
   std::string component_tf_name_;
 
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer> interactive_marker_server_;
+
 
 
   std::map<std::string, UrdfManager> urdf_managers_;
@@ -170,3 +188,9 @@ protected:
 } // end namespace rviz_plugin_tutorials
 
 #endif // TELEOP_PANEL_H
+
+
+
+
+
+
