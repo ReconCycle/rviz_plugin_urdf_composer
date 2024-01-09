@@ -166,8 +166,6 @@ protected:
   ros::NodeHandle nh_;
 
   
-
-
   std::string urdf_path_assembly_;
   std::string urdf_path_new_component_;
 
@@ -181,6 +179,8 @@ protected:
   std::map<std::string, UrdfManager> urdf_managers_;
 
   tf2_ros::TransformBroadcaster tf_broadcaster_;
+
+  geometry_msgs::TransformStamped marker_tf_transform_;
 
 
 };

@@ -117,6 +117,19 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
       break;
 
     case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
+      marker_tf_transform_ = geometry_msgs::TransformStamped();
+
+      // Set translation from Pose
+      marker_tf_transform_.transform.translation.x = feedback->pose.position.x;
+      marker_tf_transform_.transform.translation.y = feedback->pose.position.y;
+      marker_tf_transform_.transform.translation.z = feedback->pose.position.z;
+
+      marker_tf_transform_.transform.rotation.x = feedback->pose.orientation.x;
+      marker_tf_transform_.transform.rotation.y = feedback->pose.orientation.y;
+      marker_tf_transform_.transform.rotation.z = feedback->pose.orientation.z;
+      marker_tf_transform_.transform.rotation.w = feedback->pose.orientation.w;
+      updateComponentsTFs();
+
       ROS_INFO_STREAM( s.str() << ": pose changed"
           << "\nposition = "
           << feedback->pose.position.x
@@ -180,7 +193,7 @@ void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, con
   int_marker.pose.position.z = position[2];
   int_marker.scale = 1;
 
-  int_marker.name = "simple_6dof";
+  int_marker.name = "new_component_pose";
   int_marker.description = "Simple 6-DOF Control";
 
   // insert a box
@@ -249,6 +262,7 @@ void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, con
   
   //if (interaction_mode != visualization_msgs::InteractiveMarkerControl::NONE)
    // menu_handler.apply( *interactive_marker_server_, int_marker.name );
+
 }
 // %EndTag(6DOF)%
 

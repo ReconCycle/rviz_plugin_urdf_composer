@@ -79,6 +79,10 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   QVBoxLayout* root_layout = new QVBoxLayout;
 
+  marker_tf_transform_ = geometry_msgs::TransformStamped();;
+
+  marker_tf_transform_.transform.rotation.w=1;
+
   UrdfManager urdf_manager_assembly;
   UrdfManager urdf_manager_component;
 
@@ -155,6 +159,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   connect(urdf_managers_["assembly_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedBase);
   connect(urdf_managers_["component_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedComponent);
   
+
 
   QPushButton *button_save_urdf = new QPushButton("save urdf", this);
 
@@ -301,6 +306,15 @@ void TeleopPanel::onComboBoxIndexChangedBase(int index) {
 
   QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
   base_tf_name_ =  selectedItemText.toStdString();
+
+  //change marker base
+  InteractiveMarker int_marker;
+  interactive_marker_server_->get("new_component_pose",int_marker);
+  int_marker.header.frame_id = "/assembly_urdf_model/" + base_tf_name_;
+  //interactive_marker_server_->insert(int_marker);
+  interactive_marker_server_->applyChanges();
+
+
   updateComponentsTFs();
 }
 
@@ -335,7 +349,10 @@ bool  TeleopPanel::updateComponentsTFs()
   geometry_msgs::TransformStamped tf_transform = createInitTF("/assembly_urdf_model/" + base_tf_name_, "intermidiate" );
   ROS_INFO_STREAM("base: " << base_tf_name_);
 
+  tf_transform.transform =  marker_tf_transform_.transform;
+
   geometry_msgs::TransformStamped tf_transform_intermidiate = createInitTF("intermidiate",  "/component_urdf_model/" + urdf_managers_["component_urdf_model"].root_segment_name); // component_tf_name_ 
+
 
   KDL::Chain kdlChain = KDL::Chain();
   ROS_INFO_STREAM("compnent: " << component_tf_name_);
@@ -373,6 +390,7 @@ bool  TeleopPanel::updateComponentsTFs()
   urdf_managers_["component_urdf_model"].pose_transforms.push_back(tf_transform_intermidiate) ;
   return true;
 }
+
 bool TeleopPanel::setEnabledDisplay(std::string name, bool enabled)
 {
      // Access all displays
