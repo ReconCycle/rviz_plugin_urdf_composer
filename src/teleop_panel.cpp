@@ -306,11 +306,12 @@ void TeleopPanel::onComboBoxIndexChangedBase(int index) {
 
   QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
   base_tf_name_ =  selectedItemText.toStdString();
+  component_absolute_base_tf_name_ =  "/assembly_urdf_model/" + base_tf_name_;
 
   //change marker base
   InteractiveMarker int_marker;
   interactive_marker_server_->get("new_component_pose",int_marker);
-  int_marker.header.frame_id = "/assembly_urdf_model/" + base_tf_name_;
+  int_marker.header.frame_id = component_absolute_base_tf_name_;
   //interactive_marker_server_->insert(int_marker);
   interactive_marker_server_->applyChanges();
 
@@ -346,8 +347,8 @@ bool  TeleopPanel::updateComponentsTFs()
 
   urdf_managers_["component_urdf_model"].pose_transforms.clear() ;
 
-  geometry_msgs::TransformStamped tf_transform = createInitTF("/assembly_urdf_model/" + base_tf_name_, "intermidiate" );
-  ROS_INFO_STREAM("base: " << base_tf_name_);
+  geometry_msgs::TransformStamped tf_transform = createInitTF(component_absolute_base_tf_name_, "intermidiate" );
+  ROS_INFO_STREAM("base: " << component_absolute_base_tf_name_);
 
   tf_transform.transform =  marker_tf_transform_.transform;
 

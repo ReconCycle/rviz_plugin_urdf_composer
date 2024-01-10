@@ -169,6 +169,9 @@ protected:
   std::string urdf_path_assembly_;
   std::string urdf_path_new_component_;
 
+  std::string assembly_absolute_base_tf_name_{"map"};
+  std::string component_absolute_base_tf_name_{"map"};
+
   std::string base_tf_name_;
   std::string component_tf_name_;
 

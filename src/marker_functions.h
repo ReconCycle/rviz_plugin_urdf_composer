@@ -67,16 +67,19 @@ void TeleopPanel::frameCallback()
 
   tf2::Stamped<tf2::Transform> transform;
   transform.stamp_ = time;
-  transform.frame_id_ = "map";
+  transform.frame_id_ = component_absolute_base_tf_name_; //"map";
+
   transform.setOrigin(tf2::Vector3(0.0, 0.0, sin(0/ 140.0) * 2.0));
   transform.setRotation(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
 
   geometry_msgs::TransformStamped transform_msg;
   transform_msg = tf2::toMsg(transform);
-  transform_msg.child_frame_id = "moving_frame";
+
+  transform_msg.child_frame_id = "marker_base_frame";
   tf_broadcaster_.sendTransform(transform_msg);
 
-
+  /*transform_msg.child_frame_id = "moving_frame";
+  tf_broadcaster_.sendTransform(transform_msg);
 
   transform.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
   tf2::Quaternion quat;
@@ -84,7 +87,7 @@ void TeleopPanel::frameCallback()
   transform.setRotation(quat);
   transform_msg = tf2::toMsg(transform);
   transform_msg.child_frame_id = "rotating_frame";
-  tf_broadcaster_.sendTransform(transform_msg);
+  tf_broadcaster_.sendTransform(transform_msg);*/
 
 
 }
@@ -187,7 +190,7 @@ void TeleopPanel::alignMarker( const visualization_msgs::InteractiveMarkerFeedba
 void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, const tf2::Vector3& position, bool show_6dof )
 {
   InteractiveMarker int_marker;
-  int_marker.header.frame_id = "map";
+  int_marker.header.frame_id = "marker_base_frame";// "map";
   int_marker.pose.position.x = position[0];
   int_marker.pose.position.y = position[1];
   int_marker.pose.position.z = position[2];
