@@ -222,7 +222,34 @@ void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
       std::cerr << "Error: Unable to open file " << urdf_path << std::endl;
       
   }
+  
+  std::string base_filename = urdf_path.substr(urdf_path.find_last_of("/") + 1);
+  
+  bool xacro_process{false};
+  if(base_filename.find("xacro") != std::string::npos)
+  { 
+    xacro_process = true;
+  }
 
+    if(xacro_process)
+    {
+      // Construct the xacro command
+      std::string xacroCommand = "xacro " + urdf_path + " > tmp.urdf"; //" -o " + outputFile;
+
+      // Execute the xacro command
+      int result = std::system(xacroCommand.c_str());
+      
+      file = std::ifstream("tmp.urdf");
+      if (!file.is_open()) 
+      {
+          std::cerr << "Error: Unable to open file " << "tmp.urdf" << std::endl;
+      }
+
+      std::remove("tmp.urdf");
+          
+    }
+
+  
   // Use the constructor of std::string to load the file content
   std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
