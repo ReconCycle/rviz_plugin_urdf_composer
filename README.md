@@ -3,4 +3,7 @@ ROS package with rviz plugin for asembling multiple xacro-urdf files to single x
 
  ## Run rviz config
  
- rviz -d test.rviz
+ rviz -d test2.rviz
+
+
+xacro robot_arm.urdf_xacro > tmp.urdf
