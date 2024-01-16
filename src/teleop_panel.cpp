@@ -109,8 +109,6 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   }
 
 
-
-
   for(std::string urdf_namespace : std::vector<std::string>{"assembly_urdf_model","component_urdf_model"})
   {
     
@@ -151,26 +149,75 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_tf_layout);
 
     root_layout->addLayout( urdf_managers_[urdf_namespace].qt_control_layout );
-
+    root_layout->addWidget( new QLabel( "" ));
   }
-
 
 
   connect(urdf_managers_["assembly_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedBase);
   connect(urdf_managers_["component_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedComponent);
   
 
-
   QPushButton *button_save_urdf = new QPushButton("save urdf", this);
 
   QHBoxLayout* save_urdf_layout = new QHBoxLayout;
   save_urdf_layout->addWidget( button_save_urdf );
 
-  // Lay out the topic field above the control widget.
+  //PREPARE MOVMENT LAYOUT
+  QVBoxLayout* movement_root_layout = new QVBoxLayout;
 
-  //layout->addLayout( topic_layout );
+  QHBoxLayout* movement_x_layout = new QHBoxLayout;
+  QLabel* label = new QLabel( "X translation:" );
+  label->adjustSize();
+  movement_x_layout->addWidget( label );
+  QSpinBox* x_window = new QSpinBox;
+  movement_x_layout->addWidget(x_window);
+  movement_x_layout->addWidget( new QLabel( "mm" ));
 
+
+  QHBoxLayout* movement_y_layout = new QHBoxLayout;
+  movement_y_layout->addWidget( new QLabel( "Y translation:" ) );
+  QSpinBox* y_window = new QSpinBox;
+  movement_y_layout->addWidget(y_window);
+  movement_y_layout->addWidget( new QLabel( "mm" ));
+
+  QHBoxLayout* movement_z_layout = new QHBoxLayout;
+  movement_z_layout->addWidget( new QLabel( "Z translation:" ) );
+  QSpinBox* z_window = new QSpinBox;
+  movement_z_layout->addWidget(z_window);
+  movement_z_layout->addWidget( new QLabel( "mm" ));
+
+  QHBoxLayout* movement_rr_layout = new QHBoxLayout;
+  movement_rr_layout->addWidget( new QLabel( "RX rotation:" ) );
+  QSpinBox* rr_window = new QSpinBox;
+  movement_rr_layout->addWidget(rr_window);
+  movement_rr_layout->addWidget( new QLabel( "deg" ));
+
+  QHBoxLayout* movement_ry_layout = new QHBoxLayout;
+  movement_ry_layout->addWidget( new QLabel( "RY rotation:" ) );
+  QSpinBox* ry_window = new QSpinBox;
+  movement_ry_layout->addWidget(ry_window);
+  movement_ry_layout->addWidget( new QLabel( "deg" ));
+
+  QHBoxLayout* movement_rz_layout = new QHBoxLayout;
+  movement_rz_layout->addWidget( new QLabel( "RZ rotation:" ) );
+  QSpinBox* rz_window = new QSpinBox;
+  movement_rz_layout->addWidget(rz_window);
+  movement_rz_layout->addWidget( new QLabel( "deg" ));
+
+
+  movement_root_layout->addWidget( new QLabel( "MOVING PART" ));
+  movement_root_layout->addLayout(movement_x_layout);
+  movement_root_layout->addLayout( movement_y_layout);
+  movement_root_layout->addLayout( movement_z_layout);
+  movement_root_layout->addLayout( movement_rr_layout);
+  movement_root_layout->addLayout( movement_ry_layout);
+  movement_root_layout->addLayout( movement_rz_layout);
+
+  // ADD layout for small movment
+  root_layout->addLayout( movement_root_layout);
+  root_layout->addWidget( new QLabel( "" ));
   root_layout->addLayout( save_urdf_layout );
+  
 
 
   root_layout->addWidget( comboBox );

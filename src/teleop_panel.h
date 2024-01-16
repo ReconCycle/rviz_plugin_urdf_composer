@@ -56,6 +56,8 @@
 #include <QFileDialog>
 #include <QPushButton>
 
+#include <QSpinBox>
+
 #include <interactive_markers/interactive_marker_server.h>
 
 
