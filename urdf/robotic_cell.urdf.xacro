@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+
+
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="robotic_cell">
+
+  <xacro:macro name="loop_code" params="current_i names_vector yaml_data_dictionary"  >
+
+    <xacro:property name="current_name" value="${names_vector[current_i]}"/>
+
+
+    <xacro:property name="current_package_name" value="${yaml_data_dictionary[current_name]['package_name']}" />
+
+    <xacro:property name="current_urdf_name" value="${yaml_data_dictionary[current_name]['urdf_name']}" />
+
+    <xacro:property name="this_robot_name" value="${current_name + '_'}" />
+
+
+    <joint name="${this_robot_name + 'module_pose'}" type="fixed">
+        <origin xyz="${yaml_data_dictionary[current_name]['x']} ${yaml_data_dictionary[current_name]['y']} ${yaml_data_dictionary[current_name]['z']}" rpy="${yaml_data_dictionary[current_name]['er']} ${yaml_data_dictionary[current_name]['ep']} ${yaml_data_dictionary[current_name]['ey']}" />
+        <axis xyz="1 0 0"/>
+        <parent link="${yaml_data_dictionary[current_name]['parrent']}"/>
+        <child link="${this_robot_name + 'base'}"/>
+    </joint>
+
+
+    <xacro:arg name="standalone"  default="false"/>
+
+    <xacro:include filename="$(find  ${current_package_name})/urdf/${current_urdf_name}" >
+      
+    </xacro:include>
+
+
+  </xacro:macro>
+
+  <xacro:macro name="loop" params="current_i names_vector yaml_data_dictionary">
+      <!-- call some macros or do other things -->
+      <xacro:if value="${current_i}">
+
+          <xacro:loop_code current_i="${current_i-1}"  names_vector = "${list_of_active_elements_names}" yaml_data_dictionary="${yaml_data_dictionary}" />
+
+          <xacro:loop current_i="${current_i-1}"  names_vector = "${list_of_active_elements_names}" yaml_data_dictionary="${yaml_data_dictionary}"/>
+      </xacro:if>
+  </xacro:macro>
+
+  <!-- ACTUAL PROGRAM-->
+
+
+  <xacro:property name="parrent_package_name" value="rviz_plugin_urdf_composer" />
+
+  <xacro:property name="yaml_file" value="$(find ${parrent_package_name})/config/active_config.yaml" />
+  <xacro:property name="active_config" value="${xacro.load_yaml(yaml_file)}"/>
+
+  <xacro:property name="list_of_active_elements_names" value="${active_config['active_description_elements']}"/>
+
+  <link name="robotic_cell_base">
+
+  </link>
+
+
+  <xacro:loop current_i="${len(list_of_active_elements_names)}" names_vector = "${list_of_active_elements_names}" yaml_data_dictionary="${active_config}"/>
+
+ 
+
+
+</robot>
+
+

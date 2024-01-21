@@ -116,9 +116,13 @@ public:
   virtual void load( const rviz::Config& config );
   virtual void save( rviz::Config config ) const;
 
-  void loadURDFtoParam(std::string param_name_namespace);
+  void selectUrdfFile(std::string param_name_namespace);
+  void loadURDFtoParam(std::string urdf_path, std::string param_name_namespace);
 
-  bool parseURDFfile(std::string urdf_string);
+  void initEmptyUrdf();
+  void updateAssemblyUrdf(std::string path);
+  void addComponentToUrdf();
+  void saveGeneratedUrdf();
 
   bool setEnabledDisplay(std::string name, bool enabled);
   void onComboBoxIndexChangedBase(int index);
@@ -178,6 +182,9 @@ protected:
 
   std::string base_tf_name_;
   std::string component_tf_name_;
+
+  std::string assembly_urdf_namespace_{"/assembly_urdf_namespace"};
+  std::string workspace_path_;
 
   std::shared_ptr<interactive_markers::InteractiveMarkerServer> interactive_marker_server_;
 
