@@ -257,26 +257,35 @@ void TeleopPanel::addComponentToUrdf()
   std::string robot_name = "new_robot";
 
   std::string component_ns = assembly_urdf_namespace_ + "/" + robot_name+ "/";
-  nh_.setParam(component_ns+ "x",8.0);
-  nh_.setParam(component_ns+ "y",8.0);
-  nh_.setParam(component_ns+ "z",8.0);
+  nh_.setParam(component_ns+ "x", marker_tf_transform_.transform.translation.x);
+  nh_.setParam(component_ns+ "y", marker_tf_transform_.transform.translation.y);
+  nh_.setParam(component_ns+ "z", marker_tf_transform_.transform.translation.z);
 
-  nh_.setParam(component_ns+ "ep",0.0);
-  nh_.setParam(component_ns+ "er",0.0);
-  nh_.setParam(component_ns+ "ey",0.0);
+  KDL::Frame kdl_frame;
+  double roll, pitch, yaw;
+  kdl_frame = tf2::transformToKDL(marker_tf_transform_);
+      
+  kdl_frame.M.GetRPY(roll, pitch, yaw);
+  nh_.setParam(component_ns+ "ep",pitch);
+  nh_.setParam(component_ns+ "er",roll);
+  nh_.setParam(component_ns+ "ey",yaw);
 
   nh_.setParam(component_ns+ "package_name","robotic_cell_description");
-  nh_.setParam(component_ns+ "parrent","robotic_cell_base");
+  nh_.setParam(component_ns+ "parrent", base_tf_name_);
   nh_.setParam(component_ns+ "urdf_name","robot_arm.urdf.xacro");
 
   std::vector<std::string> current_active_components;
+
   nh_.getParam(assembly_urdf_namespace_+ "/active_description_elements",current_active_components);
+  
   current_active_components.push_back(robot_name);
+
   nh_.setParam(assembly_urdf_namespace_+ "/active_description_elements",current_active_components);
 
   std::string yaml_path = workspace_path_ + "/config/active_config.yaml";
  
   std::string systemCommand = "rosparam dump " + yaml_path + " " + assembly_urdf_namespace_; //" -o " + outputFile;
+
   int result = std::system(systemCommand.c_str());
 
   std::string urdf_path = workspace_path_ + "/urdf/robotic_cell.urdf.xacro";

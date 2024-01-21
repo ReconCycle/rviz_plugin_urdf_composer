@@ -3,18 +3,15 @@ active_description_elements:
 - robot_2
 - new_robot
 new_robot:
-  active_description_elements:
-  - robot_1
-  - robot_2
-  ep: 0.0
-  er: 0.0
-  ey: 0.0
+  ep: -0.8097678678247537
+  er: -0.6802605980467157
+  ey: -0.23207473260719486
   package_name: robotic_cell_description
-  parrent: robotic_cell_base
+  parrent: robot_1_forearm
   urdf_name: robot_arm.urdf.xacro
-  x: 8.0
-  y: 8.0
-  z: 8.0
+  x: -1.5566741228103638
+  y: -1.624696135520935
+  z: -1.5211946964263916
 robot_1:
   ep: 0.0
   er: 0.0

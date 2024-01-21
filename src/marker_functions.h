@@ -61,8 +61,6 @@ void TeleopPanel::frameCallback()
 {
 
 
-
-
   ros::Time time = ros::Time::now();
 
   tf2::Stamped<tf2::Transform> transform;
@@ -134,8 +132,7 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
       marker_tf_transform_.transform.rotation.y = feedback->pose.orientation.y;
       marker_tf_transform_.transform.rotation.z = feedback->pose.orientation.z;
       marker_tf_transform_.transform.rotation.w = feedback->pose.orientation.w;
-      
-
+ 
       kdl_frame = tf2::transformToKDL(marker_tf_transform_);
       
       kdl_frame.M.GetRPY(roll, pitch, yaw);
@@ -147,10 +144,21 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
       pose_control_layout_boxes_["RX rotation:"]->setValue(roll);
       pose_control_layout_boxes_["RY rotation:"]->setValue(pitch);
       pose_control_layout_boxes_["RZ rotation:"]->setValue(yaw);
+
+      ROS_INFO_STREAM( s.str() << ": pose changed1 " << roll << "  " << pitch << " " << yaw );
+
+      kdl_frame.M.GetEulerZYX(roll, pitch, yaw);
+
+      ROS_INFO_STREAM( s.str() << ": pose changed2 " << roll << "  " << pitch << " " << yaw );
+
+      kdl_frame.M.GetEulerZYZ(roll, pitch, yaw);
+
+      ROS_INFO_STREAM( s.str() << ": pose changed3 " << roll << "  " << pitch << " " << yaw );
+
       
       updateComponentsTFs();
 
-      ROS_INFO_STREAM( s.str() << ": pose changed"
+      /*ROS_INFO_STREAM( s.str() << ": pose changed"
           << "\nposition = "
           << feedback->pose.position.x
           << ", " << feedback->pose.position.y
@@ -162,7 +170,7 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
           << ", " << feedback->pose.orientation.z
           << "\nframe: " << feedback->header.frame_id
           << " time: " << feedback->header.stamp.sec << "sec, "
-          << feedback->header.stamp.nsec << " nsec" );
+          << feedback->header.stamp.nsec << " nsec" );*/
       break;
 
     case visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN:
