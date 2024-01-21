@@ -145,6 +145,8 @@ public:
   void alignMarker( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void make6DofMarker( bool fixed, unsigned int interaction_mode, const tf2::Vector3& position, bool show_6dof );
 
+  QHBoxLayout* createInteractiveSpinBox(std::string name, std::string units, double min, double max );
+
   // Next come a couple of public Qt slots.
 public Q_SLOTS:
 
@@ -180,6 +182,7 @@ protected:
   std::shared_ptr<interactive_markers::InteractiveMarkerServer> interactive_marker_server_;
 
 
+  std::map<std::string, QDoubleSpinBox*> pose_control_layout_boxes_;
 
   std::map<std::string, UrdfManager> urdf_managers_;
 

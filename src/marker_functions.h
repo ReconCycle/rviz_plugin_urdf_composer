@@ -109,6 +109,9 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
                    << " in frame " << feedback->header.frame_id;
   }
 
+  KDL::Frame kdl_frame;
+  double roll, pitch, yaw;
+
   switch ( feedback->event_type )
   {
     case visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK:
@@ -131,6 +134,20 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
       marker_tf_transform_.transform.rotation.y = feedback->pose.orientation.y;
       marker_tf_transform_.transform.rotation.z = feedback->pose.orientation.z;
       marker_tf_transform_.transform.rotation.w = feedback->pose.orientation.w;
+      
+
+      kdl_frame = tf2::transformToKDL(marker_tf_transform_);
+      
+      kdl_frame.M.GetRPY(roll, pitch, yaw);
+
+      pose_control_layout_boxes_["X translation:"]->setValue(marker_tf_transform_.transform.translation.x);
+      pose_control_layout_boxes_["Y translation:"]->setValue(marker_tf_transform_.transform.translation.y);
+      pose_control_layout_boxes_["Z translation:"]->setValue(marker_tf_transform_.transform.translation.z);
+
+      pose_control_layout_boxes_["RX rotation:"]->setValue(roll);
+      pose_control_layout_boxes_["RY rotation:"]->setValue(pitch);
+      pose_control_layout_boxes_["RZ rotation:"]->setValue(yaw);
+      
       updateComponentsTFs();
 
       ROS_INFO_STREAM( s.str() << ": pose changed"
@@ -219,7 +236,7 @@ void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, con
       if( interaction_mode == visualization_msgs::InteractiveMarkerControl::ROTATE_3D )       mode_text = "ROTATE_3D";
       if( interaction_mode == visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D )  mode_text = "MOVE_ROTATE_3D";
       int_marker.name += "_" + mode_text;
-      int_marker.description = std::string("3D Control") + (show_6dof ? " + 6-DOF controls" : "") + "\n" + mode_text;
+      int_marker.description = "MOVE COMPONENT";
   }
 
   if(show_6dof)
@@ -248,7 +265,7 @@ void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, con
 
     orien = tf2::Quaternion(0.0, 0.0, 1.0, 1.0);
     orien.normalize();
-     control.orientation = tf2::toMsg(orien);
+    control.orientation = tf2::toMsg(orien);
     control.name = "rotate_y";
     control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
     int_marker.controls.push_back(control);
@@ -256,10 +273,10 @@ void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, con
     control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
   }
-  ROS_INFO_STREAM("z");
+
   interactive_marker_server_->insert(int_marker);
   interactive_marker_server_->setCallback(int_marker.name, std::bind(&TeleopPanel::processFeedback, this, std::placeholders::_1));//
-   ROS_INFO_STREAM("2");
+
   //interactive_marker_server_->setCallback(int_marker.name, &TeleopPanel::processFeedback);
 
   

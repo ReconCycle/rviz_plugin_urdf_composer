@@ -165,51 +165,20 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   //PREPARE MOVMENT LAYOUT
   QVBoxLayout* movement_root_layout = new QVBoxLayout;
 
-  QHBoxLayout* movement_x_layout = new QHBoxLayout;
-  QLabel* label = new QLabel( "X translation:" );
-  label->adjustSize();
-  movement_x_layout->addWidget( label );
-  QSpinBox* x_window = new QSpinBox;
-  movement_x_layout->addWidget(x_window);
-  movement_x_layout->addWidget( new QLabel( "mm" ));
+  QHBoxLayout* movement_x_layout = createInteractiveSpinBox("X translation:","m",-10.0,10.0);
+  QHBoxLayout* movement_y_layout = createInteractiveSpinBox("Y translation:","m",-10.0,10.0);
+  QHBoxLayout* movement_z_layout = createInteractiveSpinBox("Z translation:","m",-10.0,10.0);
 
-
-  QHBoxLayout* movement_y_layout = new QHBoxLayout;
-  movement_y_layout->addWidget( new QLabel( "Y translation:" ) );
-  QSpinBox* y_window = new QSpinBox;
-  movement_y_layout->addWidget(y_window);
-  movement_y_layout->addWidget( new QLabel( "mm" ));
-
-  QHBoxLayout* movement_z_layout = new QHBoxLayout;
-  movement_z_layout->addWidget( new QLabel( "Z translation:" ) );
-  QSpinBox* z_window = new QSpinBox;
-  movement_z_layout->addWidget(z_window);
-  movement_z_layout->addWidget( new QLabel( "mm" ));
-
-  QHBoxLayout* movement_rr_layout = new QHBoxLayout;
-  movement_rr_layout->addWidget( new QLabel( "RX rotation:" ) );
-  QSpinBox* rr_window = new QSpinBox;
-  movement_rr_layout->addWidget(rr_window);
-  movement_rr_layout->addWidget( new QLabel( "deg" ));
-
-  QHBoxLayout* movement_ry_layout = new QHBoxLayout;
-  movement_ry_layout->addWidget( new QLabel( "RY rotation:" ) );
-  QSpinBox* ry_window = new QSpinBox;
-  movement_ry_layout->addWidget(ry_window);
-  movement_ry_layout->addWidget( new QLabel( "deg" ));
-
-  QHBoxLayout* movement_rz_layout = new QHBoxLayout;
-  movement_rz_layout->addWidget( new QLabel( "RZ rotation:" ) );
-  QSpinBox* rz_window = new QSpinBox;
-  movement_rz_layout->addWidget(rz_window);
-  movement_rz_layout->addWidget( new QLabel( "deg" ));
+  QHBoxLayout* movement_rx_layout = createInteractiveSpinBox("RX rotation:","deg",-180.0,180.0);
+  QHBoxLayout* movement_ry_layout = createInteractiveSpinBox("RY rotation:","deg",-180.0,180.0);
+  QHBoxLayout* movement_rz_layout = createInteractiveSpinBox("RZ rotation:","deg",-180.0,180.0);
 
 
   movement_root_layout->addWidget( new QLabel( "MOVING PART" ));
   movement_root_layout->addLayout(movement_x_layout);
   movement_root_layout->addLayout( movement_y_layout);
   movement_root_layout->addLayout( movement_z_layout);
-  movement_root_layout->addLayout( movement_rr_layout);
+  movement_root_layout->addLayout( movement_rx_layout);
   movement_root_layout->addLayout( movement_ry_layout);
   movement_root_layout->addLayout( movement_rz_layout);
 
@@ -254,6 +223,23 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 
 
+}
+
+QHBoxLayout* TeleopPanel::createInteractiveSpinBox( std::string name, std::string units, double min, double max )
+{
+  QHBoxLayout* movement_y_layout = new QHBoxLayout;
+  movement_y_layout->addWidget( new QLabel( QString::fromStdString(name) ) );
+  
+  QDoubleSpinBox* value_window = new QDoubleSpinBox;
+
+  value_window->setMinimum(min);
+  value_window->setMaximum(max);
+  pose_control_layout_boxes_[name] = value_window;
+
+  movement_y_layout->addWidget(value_window);
+  movement_y_layout->addWidget( new QLabel( QString::fromStdString(units)  ));
+
+  return movement_y_layout;
 }
 
 void  TeleopPanel::loadURDFtoParam(std::string param_name_namespace)
