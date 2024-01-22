@@ -141,19 +141,41 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
       pose_control_layout_boxes_["Y translation:"]->setValue(marker_tf_transform_.transform.translation.y);
       pose_control_layout_boxes_["Z translation:"]->setValue(marker_tf_transform_.transform.translation.z);
 
-      pose_control_layout_boxes_["RX rotation:"]->setValue(roll);
-      pose_control_layout_boxes_["RY rotation:"]->setValue(pitch);
-      pose_control_layout_boxes_["RZ rotation:"]->setValue(yaw);
+      
+      /*{
+      KDL::Vector rot_vector = kdl_frame.M.UnitX()*KDL::Vector{1,0,0};
+      
+      ROS_INFO_STREAM( s.str() << ": cos " << kdl_frame.M.UnitX()[0] );
 
-      ROS_INFO_STREAM( s.str() << ": pose changed1 " << roll << "  " << pitch << " " << yaw );
+      double rotation_angle = std::acos(float(kdl_frame.M.UnitX()[0]));
+      if(kdl_frame.M.UnitX()[0]>1)
+      {
+        rotation_angle = 0;
+      }else if(kdl_frame.M.UnitX()[0]<-1)
+      {
+        rotation_angle = M_PI;
+      }
+      
+      ROS_INFO_STREAM( s.str() << ": pose changed1 " << rot_vector[0] << "  " << rot_vector[1]  << " " << rot_vector[2] );
+      KDL::Rotation lift_matrix = KDL::Rotation::Rot(rot_vector, rotation_angle) ;
+      ROS_INFO_STREAM( s.str() << ": angle2 " <<rotation_angle );
 
-      kdl_frame.M.GetEulerZYX(roll, pitch, yaw);
+      lift_matrix = lift_matrix*kdl_frame.M;
 
-      ROS_INFO_STREAM( s.str() << ": pose changed2 " << roll << "  " << pitch << " " << yaw );
+      double x_rotation_angle = std::acos(lift_matrix.UnitY()[1]);
 
-      kdl_frame.M.GetEulerZYZ(roll, pitch, yaw);
+      ROS_INFO_STREAM( s.str() << ": angleX" << x_rotation_angle*180/M_PI );
+      } */
 
-      ROS_INFO_STREAM( s.str() << ": pose changed3 " << roll << "  " << pitch << " " << yaw );
+
+
+      pose_control_layout_boxes_["RX rotation:"]->setValue(calculateAbsoluteAngle(kdl_frame.M, 0)*180/M_PI);
+      pose_control_layout_boxes_["RY rotation:"]->setValue(calculateAbsoluteAngle(kdl_frame.M, 1)*180/M_PI);
+      pose_control_layout_boxes_["RZ rotation:"]->setValue(calculateAbsoluteAngle(kdl_frame.M, 2)*180/M_PI);
+
+
+      //KDL::Rotation lift_matrix = KDL::Rotation::Rot 	( 	const Vector &  	rotvec,double  	angle) ;
+
 
       
       updateComponentsTFs();
@@ -183,6 +205,69 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
   }
 
   interactive_marker_server_->applyChanges(); /**/
+}
+
+double TeleopPanel::calculateAbsoluteAngle(KDL::Rotation rotation_matrix,  int axis_index)
+{
+  ROS_INFO_STREAM( "Index" <<axis_index );
+  KDL::Vector direction_vector{0,0,0};
+  direction_vector[axis_index] = 1;
+  KDL::Vector unitVector = getUnitVector(rotation_matrix,axis_index);
+  KDL::Vector rot_vector = unitVector*direction_vector;
+
+
+  double rotation_angle = std::acos(float(unitVector[axis_index]));
+  if(unitVector[axis_index]>1)
+  {
+    rotation_angle = 0;
+  }else if(unitVector[axis_index]<-1)
+  {
+    rotation_angle = M_PI;
+  }
+  ROS_INFO_STREAM( "Angle" <<rotation_angle );
+
+
+  
+  //KDL::Rotation lift_matrix = KDL::Rotation::Rot(rot_vector, rotation_angle) ;
+  KDL::Rotation rotated_matrix = KDL::Rotation::Rot(rot_vector, rotation_angle) *rotation_matrix;
+  ROS_INFO_STREAM( "unit size" << getUnitVector(rotated_matrix,axis_index)[axis_index]);
+  KDL::Rotation  rotated_matrix2  = KDL::Rotation::Rot(rot_vector, -rotation_angle) *rotation_matrix;
+  ROS_INFO_STREAM( "unit size" << getUnitVector(rotated_matrix2,axis_index)[axis_index]);
+
+  int next_index = axis_index +1 ;
+  if(next_index>2)
+  {
+    next_index= 0;
+  }
+  ROS_INFO_STREAM( "second size" << getUnitVector(rotated_matrix,next_index)[next_index]);
+  double angle = std::acos(getUnitVector(rotated_matrix,next_index)[next_index]);
+
+  if(getUnitVector(rotated_matrix,next_index)[next_index]>1)
+  {
+    angle = 0;
+  }else if(getUnitVector(rotated_matrix,next_index)[next_index]<-1)
+  {
+    angle = M_PI;
+  }
+  ROS_INFO_STREAM( "calculated angle: " << angle);
+  return angle;
+}
+
+KDL::Vector TeleopPanel::getUnitVector(KDL::Rotation rotation_matrix,  int axis_index)
+{ 
+
+  if(axis_index == 0)
+  {
+    return rotation_matrix.UnitX();
+  }else if(axis_index == 1)
+  {
+    return rotation_matrix.UnitY();
+  }else if(axis_index == 2)
+  {
+    return rotation_matrix.UnitZ();
+  }
+
+  return KDL::Vector();
 }
 // %EndTag(processFeedback)%
 

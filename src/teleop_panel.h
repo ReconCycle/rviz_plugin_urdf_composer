@@ -137,17 +137,14 @@ public:
   template<typename widget_type>
   bool findWidgetByName(const std::string& widgetName_str, QLayout* layout, widget_type widget) ;
 
-
-
-
-
-
   visualization_msgs::Marker makeBox( visualization_msgs::InteractiveMarker &msg );
   visualization_msgs::InteractiveMarkerControl& makeBoxControl( visualization_msgs::InteractiveMarker &msg );
   void frameCallback();
   void processFeedback( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void alignMarker( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback );
   void make6DofMarker( bool fixed, unsigned int interaction_mode, const tf2::Vector3& position, bool show_6dof );
+  double calculateAbsoluteAngle(KDL::Rotation rotation_matrix,  int axis_index);
+  KDL::Vector getUnitVector(KDL::Rotation rotation_matrix,  int axis_index);
 
   QHBoxLayout* createInteractiveSpinBox(std::string name, std::string units, double min, double max );
 
