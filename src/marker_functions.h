@@ -137,48 +137,28 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
       
       kdl_frame.M.GetRPY(roll, pitch, yaw);
 
+
       pose_control_layout_boxes_["X translation:"]->setValue(marker_tf_transform_.transform.translation.x);
       pose_control_layout_boxes_["Y translation:"]->setValue(marker_tf_transform_.transform.translation.y);
       pose_control_layout_boxes_["Z translation:"]->setValue(marker_tf_transform_.transform.translation.z);
 
-      
-      /*{
-      KDL::Vector rot_vector = kdl_frame.M.UnitX()*KDL::Vector{1,0,0};
-      
-      ROS_INFO_STREAM( s.str() << ": cos " << kdl_frame.M.UnitX()[0] );
-
-      double rotation_angle = std::acos(float(kdl_frame.M.UnitX()[0]));
-      if(kdl_frame.M.UnitX()[0]>1)
-      {
-        rotation_angle = 0;
-      }else if(kdl_frame.M.UnitX()[0]<-1)
-      {
-        rotation_angle = M_PI;
-      }
-      
-      ROS_INFO_STREAM( s.str() << ": pose changed1 " << rot_vector[0] << "  " << rot_vector[1]  << " " << rot_vector[2] );
-      KDL::Rotation lift_matrix = KDL::Rotation::Rot(rot_vector, rotation_angle) ;
-      ROS_INFO_STREAM( s.str() << ": angle2 " <<rotation_angle );
-
-      lift_matrix = lift_matrix*kdl_frame.M;
-
-      double x_rotation_angle = std::acos(lift_matrix.UnitY()[1]);
-
-      ROS_INFO_STREAM( s.str() << ": angleX" << x_rotation_angle*180/M_PI );
-      } */
+      pose_control_layout_boxes_["RX rotation:"]->setValue(roll*180/M_PI);
+      pose_control_layout_boxes_["RY rotation:"]->setValue(pitch*180/M_PI);
+      pose_control_layout_boxes_["RZ rotation:"]->setValue(yaw*180/M_PI);
 
 
 
-      pose_control_layout_boxes_["RX rotation:"]->setValue(calculateAbsoluteAngle(kdl_frame.M, 0)*180/M_PI);
+
+      /*pose_control_layout_boxes_["RX rotation:"]->setValue(calculateAbsoluteAngle(kdl_frame.M, 0)*180/M_PI);
       pose_control_layout_boxes_["RY rotation:"]->setValue(calculateAbsoluteAngle(kdl_frame.M, 1)*180/M_PI);
-      pose_control_layout_boxes_["RZ rotation:"]->setValue(calculateAbsoluteAngle(kdl_frame.M, 2)*180/M_PI);
+      pose_control_layout_boxes_["RZ rotation:"]->setValue(calculateAbsoluteAngle(kdl_frame.M, 2)*180/M_PI);*/
 
 
       //KDL::Rotation lift_matrix = KDL::Rotation::Rot 	( 	const Vector &  	rotvec,double  	angle) ;
 
 
       
-      updateComponentsTFs();
+      //updateComponentsTFs();
 
       /*ROS_INFO_STREAM( s.str() << ": pose changed"
           << "\nposition = "

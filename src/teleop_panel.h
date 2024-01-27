@@ -127,6 +127,7 @@ public:
   bool setEnabledDisplay(std::string name, bool enabled);
   void onComboBoxIndexChangedBase(int index);
   void onComboBoxIndexChangedComponent(int index); 
+  void changedSpinBox(std::string parameter_name, double value);
 
   geometry_msgs::TransformStamped createInitTF(std::string parrent, std::string child);
 
@@ -184,6 +185,8 @@ protected:
   std::string workspace_path_;
 
   std::shared_ptr<interactive_markers::InteractiveMarkerServer> interactive_marker_server_;
+
+  std::map<std::string, int> cart_to_ind_map_;
 
 
   std::map<std::string, QDoubleSpinBox*> pose_control_layout_boxes_;

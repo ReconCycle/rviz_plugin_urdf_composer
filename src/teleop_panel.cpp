@@ -82,6 +82,10 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   marker_tf_transform_.transform.rotation.w=1;
 
+  cart_to_ind_map_["X translation:"] = 1;
+  cart_to_ind_map_["Y translation:"] = 2;
+  cart_to_ind_map_["Z translation:"] = 3;
+
   UrdfManager urdf_manager_assembly;
   UrdfManager urdf_manager_component;
 
@@ -227,7 +231,6 @@ void TeleopPanel::saveGeneratedUrdf()
 
 
 
-
 }
 
 void TeleopPanel::initEmptyUrdf()
@@ -307,8 +310,63 @@ QHBoxLayout* TeleopPanel::createInteractiveSpinBox( std::string name, std::strin
   movement_y_layout->addWidget(value_window);
   movement_y_layout->addWidget( new QLabel( QString::fromStdString(units)  ));
 
+
+//pose_control_layout_boxes_[name]->lineEdit();
+
+  
+  //connect( pose_control_layout_boxes_[name], &QDoubleSpinBox::valueChanged, this, [this,name]{changedSpinBox(name);});
+  connect(pose_control_layout_boxes_[name], QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this,name](double value){changedSpinBox(name,value);}); //, &TeleopPanel::changedSpinBox);
+/*connect(pose_control_layout_boxes_[name], &QLineEdit::textChanged,
+        [this, name](const QString &text) { changedSpinBox(name, text.toDouble()); });*/
+
+/*connect(pose_control_layout_boxes_[name], &QLineEdit::textChanged,
+    [this, name,test]{ changedSpinBox(name, test); });*/
+
   return movement_y_layout;
 }
+void TeleopPanel::changedSpinBox(std::string parameter_name, double value)
+{
+   
+
+
+  int cart_index = cart_to_ind_map_[parameter_name];
+
+
+  switch(cart_index){
+
+    case 1:
+
+      marker_tf_transform_.transform.translation.x = pose_control_layout_boxes_[parameter_name]->value();
+      break;
+
+    case 2:
+
+      marker_tf_transform_.transform.translation.y = pose_control_layout_boxes_[parameter_name]->value();
+      break;
+            
+    case 3:
+
+      marker_tf_transform_.transform.translation.z = pose_control_layout_boxes_[parameter_name]->value();
+      break;
+
+
+  }
+  InteractiveMarker int_marker;
+  interactive_marker_server_->get("new_component_pose_MOVE_ROTATE_3D",int_marker);
+  ROS_INFO_STREAM("before: " <<int_marker.pose.position.x);
+  int_marker.pose.position.x = marker_tf_transform_.transform.translation.x;
+  int_marker.pose.position.y = marker_tf_transform_.transform.translation.y;
+  int_marker.pose.position.z = marker_tf_transform_.transform.translation.z;
+  ROS_INFO_STREAM("after: " <<int_marker.pose.position.x);
+
+    interactive_marker_server_->setPose("new_component_pose_MOVE_ROTATE_3D", int_marker.pose);
+  interactive_marker_server_->applyChanges();
+
+  updateComponentsTFs();
+
+
+}
+
 
 void  TeleopPanel::selectUrdfFile(std::string param_name_namespace)
 {  
@@ -408,9 +466,8 @@ void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name
   urdf_managers_[param_name_namespace].joint_names = joint_names;
   urdf_managers_[param_name_namespace].ready = true;
 
-    std::cerr << "hier 2 " <<std::endl;
   setEnabledDisplay(urdf_managers_[param_name_namespace].urdf_display_name,false);
-        std::cerr << "hier3 " <<std::endl;
+
   setEnabledDisplay(urdf_managers_[param_name_namespace].urdf_display_name,true);
 
   bool use_tf_static{true};
@@ -485,23 +542,23 @@ geometry_msgs::TransformStamped TeleopPanel::createInitTF(std::string parrent, s
 bool  TeleopPanel::updateComponentsTFs()
 {
 
+
   urdf_managers_["component_urdf_model"].pose_transforms.clear() ;
 
   geometry_msgs::TransformStamped tf_transform = createInitTF(component_absolute_base_tf_name_, "intermidiate" );
-  ROS_INFO_STREAM("base: " << component_absolute_base_tf_name_);
+  //ROS_INFO_STREAM("base: " << component_absolute_base_tf_name_);
 
   tf_transform.transform =  marker_tf_transform_.transform;
 
   geometry_msgs::TransformStamped tf_transform_intermidiate = createInitTF("intermidiate",  "/component_urdf_model/" + urdf_managers_["component_urdf_model"].root_segment_name); // component_tf_name_ 
 
-
   KDL::Chain kdlChain = KDL::Chain();
-  ROS_INFO_STREAM("compnent: " << component_tf_name_);
+  //ROS_INFO_STREAM("compnent: " << component_tf_name_);
   urdf_managers_["component_urdf_model"].kdl_tree.getChain(urdf_managers_["component_urdf_model"].root_segment_name,component_tf_name_,kdlChain);
   // Joint Angles
   //
   int number_of_joints = kdlChain.getNrOfJoints();
-   ROS_INFO_STREAM("joinst: " <<number_of_joints);
+   //ROS_INFO_STREAM("joinst: " <<number_of_joints);
   KDL::JntArray jointAngles = KDL::JntArray(number_of_joints);
   for(int i = 0; i<number_of_joints; i++)
   {
@@ -515,7 +572,6 @@ bool  TeleopPanel::updateComponentsTFs()
   KDL::ChainFkSolverPos_recursive FKSolver = KDL::ChainFkSolverPos_recursive(kdlChain);
   KDL::Frame eeFrame;
   FKSolver.JntToCart(jointAngles, eeFrame);
-
 
   geometry_msgs::TransformStamped tf_cal = tf2::kdlToTransform(eeFrame.Inverse());
   /*ROS_INFO_STREAM("compnent: " << eeFrame.p[0]);
