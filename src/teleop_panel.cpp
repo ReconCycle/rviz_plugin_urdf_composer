@@ -86,6 +86,10 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   cart_to_ind_map_["Y translation:"] = 2;
   cart_to_ind_map_["Z translation:"] = 3;
 
+  cart_to_ind_map_["RX rotation:"] = 4;
+  cart_to_ind_map_["RY rotation:"] = 4;
+  cart_to_ind_map_["RZ rotation:"] = 4;
+
   UrdfManager urdf_manager_assembly;
   UrdfManager urdf_manager_component;
 
@@ -380,17 +384,40 @@ void TeleopPanel::changedSpinBox(std::string parameter_name, double value)
       marker_tf_transform_.transform.translation.z = pose_control_layout_boxes_[parameter_name]->value();
       break;
 
+    case 4:
+      double roll = M_PI*pose_control_layout_boxes_["RX rotation:"]->value()/180;
+      double pitch = M_PI*pose_control_layout_boxes_["RY rotation:"]->value()/180;
+      double yaw = M_PI*pose_control_layout_boxes_["RZ rotation:"]->value()/180;
+
+  
+      KDL::Rotation kdl_rotation =  KDL::Rotation::EulerZYX(yaw, pitch, roll);
+
+      double x,y,z,w;
+  
+      kdl_rotation.GetQuaternion(x,y,z,w);
+
+      marker_tf_transform_.transform.rotation.x = x;
+      marker_tf_transform_.transform.rotation.y = y;
+      marker_tf_transform_.transform.rotation.z = z;
+      marker_tf_transform_.transform.rotation.w = w;
+
+      break;  
+
 
   }
+
   InteractiveMarker int_marker;
   interactive_marker_server_->get("new_component_pose_MOVE_ROTATE_3D",int_marker);
-  ROS_INFO_STREAM("before: " <<int_marker.pose.position.x);
+
   int_marker.pose.position.x = marker_tf_transform_.transform.translation.x;
   int_marker.pose.position.y = marker_tf_transform_.transform.translation.y;
   int_marker.pose.position.z = marker_tf_transform_.transform.translation.z;
-  ROS_INFO_STREAM("after: " <<int_marker.pose.position.x);
+  int_marker.pose.orientation.x=marker_tf_transform_.transform.rotation.x;
+  int_marker.pose.orientation.y=marker_tf_transform_.transform.rotation.y;
+  int_marker.pose.orientation.z=marker_tf_transform_.transform.rotation.z;
+  int_marker.pose.orientation.w=marker_tf_transform_.transform.rotation.w;
 
-    interactive_marker_server_->setPose("new_component_pose_MOVE_ROTATE_3D", int_marker.pose);
+  interactive_marker_server_->setPose("new_component_pose_MOVE_ROTATE_3D", int_marker.pose);
   interactive_marker_server_->applyChanges();
 
   updateComponentsTFs();
