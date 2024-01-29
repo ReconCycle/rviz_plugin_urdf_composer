@@ -93,7 +93,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   urdf_manager_assembly.urdf_display_name = "RobotModelBase";
   urdf_manager_component.urdf_display_name = "RobotModelComponent";
 
-
+  base_tf_name_ = "map";
 
   urdf_managers_["component_urdf_model"] = urdf_manager_component;
   urdf_managers_["assembly_urdf_model"] = urdf_manager_assembly;
@@ -139,6 +139,19 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_layout);
     urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_tf_layout);
 
+  }
+
+  QHBoxLayout* chose_urdf_namespace = new QHBoxLayout;
+  chose_urdf_namespace->addWidget( new QLabel( "Namespace" ));
+  namespace_lineEdit_ = new QLineEdit;
+  namespace_lineEdit_->setText("new_robot");
+  //namespace_lineEdit_->setPlaceholderText("new_robot");
+  chose_urdf_namespace->addWidget( namespace_lineEdit_);
+  urdf_managers_["component_urdf_model"].qt_control_layout->addLayout(chose_urdf_namespace);
+
+  for(std::string urdf_namespace : std::vector<std::string>{"assembly_urdf_model","component_urdf_model"})
+  {
+    
     root_layout->addLayout( urdf_managers_[urdf_namespace].qt_control_layout );
     root_layout->addWidget( new QLabel( "" ));
   }
@@ -179,6 +192,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   movement_root_layout->addLayout(movement_x_layout);
   movement_root_layout->addLayout(movement_y_layout);
   movement_root_layout->addLayout(movement_z_layout);
+
   movement_root_layout->addLayout(movement_rx_layout);
   movement_root_layout->addLayout(movement_ry_layout);
   movement_root_layout->addLayout(movement_rz_layout);
@@ -208,7 +222,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   make6DofMarker( false, visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D, position, true );
   interactive_marker_server_->applyChanges();
 
-   ROS_INFO_STREAM("out");
+ 
 
   QTimer* output_timer = new QTimer( this );
 
@@ -236,9 +250,17 @@ void TeleopPanel::saveGeneratedUrdf()
 void TeleopPanel::initEmptyUrdf()
 {
 
-    //PRELOAD EMPTY ASEMBLY
-    std::string urdf_path = workspace_path_ + "/urdf/robotic_cell.urdf.xacro";
-    updateAssemblyUrdf(urdf_path);
+  std::vector<std::string> current_active_components{};
+
+  nh_.setParam(assembly_urdf_namespace_+ "/active_description_elements",current_active_components);
+
+  std::string yaml_path = workspace_path_ + "/config/active_config.yaml";
+
+  std::string systemCommand = "rosparam dump " + yaml_path + " " + assembly_urdf_namespace_; //" -o " + outputFile;
+
+  //PRELOAD EMPTY ASEMBLY
+  std::string urdf_path = workspace_path_ + "/urdf/robotic_cell.urdf.xacro";
+  updateAssemblyUrdf(urdf_path);
 
 }
 
@@ -255,10 +277,18 @@ void TeleopPanel::updateAssemblyUrdf(std::string path)
 
 void TeleopPanel::addComponentToUrdf()
 {
-
+   ROS_INFO_STREAM("in");
   //add parameters
-  std::string robot_name = "new_robot";
+  std::string robot_name = namespace_lineEdit_->text().toStdString();
+  //check if already exist
+  ROS_INFO_STREAM(robot_name);
 
+  if(base_tf_name_ == "map")
+  {
+    base_tf_name_ = "robotic_cell_base";
+  }
+
+  
   std::string component_ns = assembly_urdf_namespace_ + "/" + robot_name+ "/";
   nh_.setParam(component_ns+ "x", marker_tf_transform_.transform.translation.x);
   nh_.setParam(component_ns+ "y", marker_tf_transform_.transform.translation.y);
@@ -273,9 +303,10 @@ void TeleopPanel::addComponentToUrdf()
   nh_.setParam(component_ns+ "er",roll);
   nh_.setParam(component_ns+ "ey",yaw);
 
-  nh_.setParam(component_ns+ "package_name","robotic_cell_description");
+
+  nh_.setParam(component_ns+ "package_name",urdf_managers_["component_urdf_model"].urdf_package);
   nh_.setParam(component_ns+ "parrent", base_tf_name_);
-  nh_.setParam(component_ns+ "urdf_name","robot_arm.urdf.xacro");
+  nh_.setParam(component_ns+ "urdf_name",  urdf_managers_["component_urdf_model"].urdf_file_name );
 
   std::vector<std::string> current_active_components;
 
@@ -431,8 +462,15 @@ void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name
 
   nh_.setParam(param_name,fileContent);
 
-  
-    std::cerr << "hier " << fileContent <<std::endl;
+  //Find package name
+  std::string keyword{"package://"};
+  int package_name_start = fileContent.find(keyword) + keyword.length();
+
+  int package_name_end = fileContent.substr(package_name_start).find("/") ;
+
+  std::string package_name = fileContent.substr(package_name_start,package_name_end);
+   std::cerr << "package_name " << package_name <<std::endl;
+  //  std::cerr << "hier " << fileContent <<std::endl;
   urdf::Model urdf_model;
 
   urdf_model.initString(fileContent);
@@ -455,6 +493,9 @@ void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name
   urdf_managers_[param_name_namespace].tf_prefix = param_name_namespace;
 
   urdf_managers_[param_name_namespace].kdl_tree = tree;
+
+  urdf_managers_[param_name_namespace].urdf_file_name = base_filename;
+  urdf_managers_[param_name_namespace].urdf_package = package_name;
   // Get the names of all joints in the robot model
 
  std::vector<std::string> joint_names{};
@@ -502,7 +543,10 @@ void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name
 void TeleopPanel::onComboBoxIndexChangedBase(int index) {
 
   QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
+
   base_tf_name_ =  selectedItemText.toStdString();
+
+
   component_absolute_base_tf_name_ =  "/assembly_urdf_model/" + base_tf_name_;
 
   //change marker base

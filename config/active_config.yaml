@@ -1,23 +1,23 @@
 active_description_elements:
-- robot_1
-- robot_2
-robot_1:
-  ep: 0.0
+- new_robot3
+- new_robot33
+new_robot3:
+  ep: -0.0
   er: 0.0
   ey: 0.0
-  package_name: robotic_cell_description
+  package_name: reco_module
   parrent: robotic_cell_base
-  urdf_name: robot_arm.urdf.xacro
-  x: 1.2
-  y: 1.3
-  z: 1.4
-robot_2:
-  ep: 0.0
+  urdf_name: reco_module.urdf.xacro
+  x: -3.741522789001465
+  y: 0.6954865455627441
+  z: 0.3932538628578186
+new_robot33:
+  ep: -0.0
   er: 0.0
   ey: 0.0
-  package_name: robotic_cell_description
-  parrent: robotic_cell_base
-  urdf_name: robot_arm.urdf.xacro
-  x: 1.0
-  y: 1.0
-  z: 1.0
+  package_name: reco_module
+  parrent: new_robot3_pnpm2
+  urdf_name: reco_module.urdf.xacro
+  x: -0.8624598979949951
+  y: 0.4717121124267578
+  z: 3.750365734100342

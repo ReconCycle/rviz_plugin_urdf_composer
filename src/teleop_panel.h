@@ -82,6 +82,9 @@ struct UrdfManager
 
   std::string urdf_display_name;
 
+  std::string urdf_file_name;
+  std::string urdf_package;
+
   std::vector<std::string> joint_names;
   std::vector<geometry_msgs::TransformStamped> pose_transforms;
   std::string root_segment_name;
@@ -180,6 +183,8 @@ protected:
 
   std::string base_tf_name_;
   std::string component_tf_name_;
+
+  QLineEdit *namespace_lineEdit_ ;
 
   std::string assembly_urdf_namespace_{"/assembly_urdf_namespace"};
   std::string workspace_path_;
