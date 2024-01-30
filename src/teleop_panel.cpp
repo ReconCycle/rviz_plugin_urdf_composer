@@ -293,16 +293,30 @@ void TeleopPanel::addComponentToUrdf()
   }
 
   
-  std::string component_ns = assembly_urdf_namespace_ + "/" + robot_name+ "/";
-  nh_.setParam(component_ns+ "x", marker_tf_transform_.transform.translation.x);
-  nh_.setParam(component_ns+ "y", marker_tf_transform_.transform.translation.y);
-  nh_.setParam(component_ns+ "z", marker_tf_transform_.transform.translation.z);
 
-  KDL::Frame kdl_frame;
-  double roll, pitch, yaw;
-  kdl_frame = tf2::transformToKDL(marker_tf_transform_);
-      
-  kdl_frame.M.GetRPY(roll, pitch, yaw);
+  KDL::Frame total_trans = KDL::Frame();
+
+  for( auto trans : urdf_managers_["component_urdf_model"].pose_transforms)
+  {
+    tf2::Stamped<tf2::Transform> stamped_transform;
+    tf2::fromMsg(trans, stamped_transform);
+    KDL::Frame kdl_frame;
+    kdl_frame = tf2::transformToKDL(trans);
+    total_trans = total_trans*kdl_frame;
+  }
+
+
+  /*KDL::Frame kdl_frame;
+
+  kdl_frame = tf2::transformToKDL(marker_tf_transform_);*/
+
+  std::string component_ns = assembly_urdf_namespace_ + "/" + robot_name+ "/";
+  nh_.setParam(component_ns+ "x", total_trans.p.x());
+  nh_.setParam(component_ns+ "y", total_trans.p.y());
+  nh_.setParam(component_ns+ "z", total_trans.p.z());
+
+  double roll, pitch, yaw;    
+  total_trans.M.GetRPY(roll, pitch, yaw);
   nh_.setParam(component_ns+ "ep",pitch);
   nh_.setParam(component_ns+ "er",roll);
   nh_.setParam(component_ns+ "ey",yaw);

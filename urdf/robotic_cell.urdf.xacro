@@ -46,9 +46,13 @@
   <!-- ACTUAL PROGRAM-->
 
 
+
   <xacro:property name="parrent_package_name" value="rviz_plugin_urdf_composer" />
 
-  <xacro:property name="yaml_file" value="$(find ${parrent_package_name})/config/active_config.yaml" />
+  <xacro:arg name="yaml_name"  default="active_config"/>
+
+  <xacro:property name="yaml_file" value="$(find ${parrent_package_name})/config/$(arg yaml_name).yaml" />
+
   <xacro:property name="active_config" value="${xacro.load_yaml(yaml_file)}"/>
 
   <xacro:property name="list_of_active_elements_names" value="${active_config['active_description_elements']}"/>
