@@ -74,6 +74,7 @@ struct UrdfManager
   QVBoxLayout* qt_control_layout;
   QComboBox* tf_combo_box;
   QPushButton* load_urdf_button;
+  QLabel* id_name;
 
   std::shared_ptr<GuiRobotStatePublisher> state_publisher;
   std::string tf_prefix;
@@ -174,6 +175,7 @@ protected:
   // The ROS node handle.
   ros::NodeHandle nh_;
 
+  QString file_loading_path_{""};
   
   std::string urdf_path_assembly_;
   std::string urdf_path_new_component_;

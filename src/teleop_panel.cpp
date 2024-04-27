@@ -55,18 +55,7 @@
 namespace rviz_urdf_composer
 {
 
-// BEGIN_TUTORIAL
-// Here is the implementation of the TeleopPanel class.  TeleopPanel
-// has these responsibilities:
-//
-// - Act as a container for GUI elements DriveWidget and QLineEdit.
-// - Publish command velocities 10 times per second (whether 0 or not).
-// - Saving and restoring internal state from a config file.
-//
-// We start with the constructor, doing the standard Qt thing of
-// passing the optional *parent* argument on to the superclass
-// constructor, and also zero-ing the velocities we will be
-// publishing.
+
 TeleopPanel::TeleopPanel( QWidget* parent )
   : rviz::Panel( parent )
 {
@@ -75,6 +64,9 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   std::string package_path = ros::package::getPath(package_name);
   workspace_path_ = package_path ;
+
+  file_loading_path_ = QDir::homePath();
+  file_loading_path_ = QString("/home/rok/ros_ws/src/robotic_cell_description/urdf");
 
   QVBoxLayout* root_layout = new QVBoxLayout;
 
@@ -106,7 +98,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   for(std::string urdf_namespace : std::vector<std::string>{"assembly_urdf_model","component_urdf_model"})
   {
-    
+    urdf_managers_[urdf_namespace].id_name = new QLabel( "Not chosen yet" );
     urdf_managers_[urdf_namespace].load_urdf_button  = new QPushButton("Choose urdf file", this);
     connect(urdf_managers_[urdf_namespace].load_urdf_button, &QPushButton::clicked, this, [this, urdf_namespace]{selectUrdfFile(urdf_namespace );});
 
@@ -115,9 +107,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     urdf_managers_[urdf_namespace].tf_combo_box = chose_urdf_tf_combo_box;
     urdf_managers_[urdf_namespace].qt_control_layout = new QVBoxLayout;
 
-
     //Set TF
-    
     
     urdf_managers_[urdf_namespace].pose_transforms = std::vector<geometry_msgs::TransformStamped>{};
     geometry_msgs::TransformStamped tf_transform = createInitTF("map" , "/" +  urdf_namespace +"/base" ); 
@@ -125,25 +115,51 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   }
 
-  urdf_managers_["assembly_urdf_model"].qt_control_layout->addWidget( new QLabel( "DEFINITION OF BASE URDF:" ));
-  urdf_managers_["component_urdf_model"].qt_control_layout->addWidget( new QLabel( "DEFINITION OF COMPONENT URDF:" ));
+  QHBoxLayout* title_composition = new QHBoxLayout;
+  title_composition->addWidget( new QLabel( "URDF COMPOSITION" ),Qt::AlignCenter);
+  urdf_managers_["assembly_urdf_model"].qt_control_layout->addLayout(title_composition);
+  urdf_managers_["component_urdf_model"].qt_control_layout->addWidget( new QLabel( "URDF COMPONENT" ));
+  {
+    QHBoxLayout* load_composition = new QHBoxLayout;
+    load_composition->addWidget( new QLabel( "Active composition: " ));
+    load_composition->addWidget(  urdf_managers_["assembly_urdf_model"].id_name );
+    urdf_managers_["assembly_urdf_model"].qt_control_layout->addLayout(load_composition);
+  }
+  {
+    QHBoxLayout* load_composition = new QHBoxLayout;
+    load_composition->addWidget( new QLabel( "Active component: " ));
+    load_composition->addWidget(  urdf_managers_["component_urdf_model"].id_name );
+    urdf_managers_["component_urdf_model"].qt_control_layout->addLayout(load_composition);
+  }
+
+
+  //Prepare loading or init composition
 
   for(std::string urdf_namespace : std::vector<std::string>{"assembly_urdf_model","component_urdf_model"})
   {
     
     QHBoxLayout* chose_urdf_layout = new QHBoxLayout;
     chose_urdf_layout->addWidget( urdf_managers_[urdf_namespace].load_urdf_button );
-    chose_urdf_layout->addWidget( new QLabel( "Not chosen yet" ));
+
+    urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_layout);
+
+  }
+
+  for(std::string urdf_name : std::vector<std::string>{"assembly","component"})
+  {
+    std::string urdf_namespace = urdf_name + "_urdf_model";
 
     QHBoxLayout* chose_urdf_tf_layout = new QHBoxLayout;
-    chose_urdf_tf_layout->addWidget( new QLabel( "Chose base tf:" ));
+    QString line_tx= QString::fromStdString("Chose "+ urdf_name + " tf:" );
+    chose_urdf_tf_layout->addWidget( new QLabel( line_tx));
     chose_urdf_tf_layout->addWidget( urdf_managers_[urdf_namespace].tf_combo_box );
 
 
-    urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_layout);
-    urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_tf_layout);
+    urdf_managers_["component_urdf_model"].qt_control_layout->addLayout(chose_urdf_tf_layout);
 
   }
+
+
 
   QHBoxLayout* chose_urdf_namespace = new QHBoxLayout;
   chose_urdf_namespace->addWidget( new QLabel( "Namespace" ));
@@ -443,16 +459,22 @@ void TeleopPanel::changedSpinBox(std::string parameter_name, double value)
 void  TeleopPanel::selectUrdfFile(std::string param_name_namespace)
 {  
   
-  QString fileName = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "All Files (*.*)");
+  QString filePath = QFileDialog::getOpenFileName(this, "Open File", file_loading_path_ , "All Files (*.*)");
 
-  if (!fileName.isEmpty()) {
+  std::cerr << "Loading" << filePath.toStdString() << std::endl;
+  if (filePath.isEmpty()) {
 
-      //qDebug() << "Selected file: " << fileName;
-      // Do something with the selected file...
+    std::cerr << "Warning: No file chosen" << filePath.toStdString() << std::endl;
+
+    return;
   }
 
+  QFileInfo fileInfo(filePath);
+  QString fileName = fileInfo.fileName();
 
-  std::string urdf_path = fileName.toStdString();
+  urdf_managers_[param_name_namespace].id_name->setText(fileName);
+
+  std::string urdf_path = filePath.toStdString();
 
   loadURDFtoParam(urdf_path, param_name_namespace);
 }
