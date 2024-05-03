@@ -121,10 +121,12 @@ public:
   virtual void save( rviz::Config config ) const;
 
   void selectUrdfFile(std::string param_name_namespace);
-  void loadURDFtoParam(std::string urdf_path, std::string param_name_namespace);
+  void loadURDFtoParam(std::string urdf_path, std::string param_name_namespace, std::string composition_yaml = "None");
+  void loadCompositionURDFconfig();
 
   void initEmptyUrdf();
   void updateAssemblyUrdf(std::string path);
+  void updateAssemblyComponentList();
   void addComponentToUrdf();
   void saveGeneratedUrdf();
 
@@ -176,6 +178,8 @@ protected:
   ros::NodeHandle nh_;
 
   QString file_loading_path_{""};
+
+  QComboBox*  composition_components_combo_box_;
   
   std::string urdf_path_assembly_;
   std::string urdf_path_new_component_;

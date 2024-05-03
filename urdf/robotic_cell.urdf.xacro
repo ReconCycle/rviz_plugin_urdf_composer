@@ -50,8 +50,17 @@
   <xacro:property name="parrent_package_name" value="rviz_plugin_urdf_composer" />
 
   <xacro:arg name="yaml_name"  default="active_config"/>
+  <xacro:arg name="yaml_path"  default="none"/>
+  <xacro:property name="yaml_path_property"  value="$(arg yaml_path)"/>
+
 
   <xacro:property name="yaml_file" value="$(find ${parrent_package_name})/config/$(arg yaml_name).yaml" />
+
+  <xacro:if value="${yaml_path_property != 'none'}">
+    <xacro:property name="yaml_file" value="${yaml_path_property}" />
+  </xacro:if>
+
+
 
   <xacro:property name="active_config" value="${xacro.load_yaml(yaml_file)}"/>
 

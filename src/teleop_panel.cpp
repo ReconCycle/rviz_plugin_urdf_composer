@@ -66,7 +66,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   workspace_path_ = package_path ;
 
   file_loading_path_ = QDir::homePath();
-  file_loading_path_ = QString("/home/rok/ros_ws/src/robotic_cell_description/urdf");
+  file_loading_path_ = QString("/home/rok/ros_ws/src/robotic_cell_description/config");
 
   QVBoxLayout* root_layout = new QVBoxLayout;
 
@@ -100,7 +100,6 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   {
     urdf_managers_[urdf_namespace].id_name = new QLabel( "Not chosen yet" );
     urdf_managers_[urdf_namespace].load_urdf_button  = new QPushButton("Choose urdf file", this);
-    connect(urdf_managers_[urdf_namespace].load_urdf_button, &QPushButton::clicked, this, [this, urdf_namespace]{selectUrdfFile(urdf_namespace );});
 
     QComboBox*  chose_urdf_tf_combo_box = new QComboBox(this);
     chose_urdf_tf_combo_box->addItem("urdf not chosen yet");
@@ -114,6 +113,12 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     urdf_managers_[urdf_namespace].pose_transforms.push_back(tf_transform);
 
   }
+  std::string urdf_namespace = "component_urdf_model";
+  connect(urdf_managers_["assembly_urdf_model"].load_urdf_button, &QPushButton::clicked, this, [this]{loadCompositionURDFconfig();});
+  connect(urdf_managers_[urdf_namespace].load_urdf_button, &QPushButton::clicked, this, [this, urdf_namespace]{selectUrdfFile(urdf_namespace);});
+
+
+
 
   QHBoxLayout* title_composition = new QHBoxLayout;
   title_composition->addWidget( new QLabel( "URDF COMPOSITION" ),Qt::AlignCenter);
@@ -150,7 +155,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     std::string urdf_namespace = urdf_name + "_urdf_model";
 
     QHBoxLayout* chose_urdf_tf_layout = new QHBoxLayout;
-    QString line_tx= QString::fromStdString("Chose "+ urdf_name + " tf:" );
+    QString line_tx= QString::fromStdString("Choose "+ urdf_name + " tf:" );
     chose_urdf_tf_layout->addWidget( new QLabel( line_tx));
     chose_urdf_tf_layout->addWidget( urdf_managers_[urdf_namespace].tf_combo_box );
 
@@ -176,6 +181,8 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     root_layout->addWidget( new QLabel( "" ));
   }
 
+  composition_components_combo_box_ = new QComboBox(this);
+  urdf_managers_["assembly_urdf_model"].qt_control_layout->addWidget(composition_components_combo_box_);
 
   connect(urdf_managers_["assembly_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedBase);
   connect(urdf_managers_["component_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedComponent);
@@ -288,6 +295,7 @@ void TeleopPanel::updateAssemblyUrdf(std::string path)
 {
 
   loadURDFtoParam(path, "assembly_urdf_model");
+
 
 
   std::string yaml_path = workspace_path_ + "/config/active_config.yaml";
@@ -455,13 +463,39 @@ void TeleopPanel::changedSpinBox(std::string parameter_name, double value)
 
 }
 
+void TeleopPanel::loadCompositionURDFconfig()
+{
+  QString filePath = QFileDialog::getOpenFileName(this, "Open File", file_loading_path_ , "All Files (*.yaml)");
+
+  std::cerr << "Loading YAML: " << filePath.toStdString() << std::endl;
+  if (filePath.isEmpty()) {
+
+    std::cerr << "Warning: No file chosen" << filePath.toStdString() << std::endl;
+
+    return;
+  }
+
+  QFileInfo fileInfo(filePath);
+  QString fileName = fileInfo.fileName();
+
+  urdf_managers_["assembly_urdf_model"].id_name->setText(fileName);
+
+  std::string param_name_namespace  = "assembly_urdf_model";
+
+
+
+  std::string urdf_path = workspace_path_ + "/urdf/robotic_cell.urdf.xacro";
+
+  loadURDFtoParam(urdf_path, param_name_namespace, filePath.toStdString());
+
+}
 
 void  TeleopPanel::selectUrdfFile(std::string param_name_namespace)
 {  
   
   QString filePath = QFileDialog::getOpenFileName(this, "Open File", file_loading_path_ , "All Files (*.*)");
 
-  std::cerr << "Loading" << filePath.toStdString() << std::endl;
+  std::cerr << "Loading: " << filePath.toStdString() << std::endl;
   if (filePath.isEmpty()) {
 
     std::cerr << "Warning: No file chosen" << filePath.toStdString() << std::endl;
@@ -476,10 +510,34 @@ void  TeleopPanel::selectUrdfFile(std::string param_name_namespace)
 
   std::string urdf_path = filePath.toStdString();
 
+
+
   loadURDFtoParam(urdf_path, param_name_namespace);
+   
+  if(param_name_namespace == "assembly_urdf_model")
+  { 
+    updateAssemblyComponentList();
+  }
 }
 
-void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name_namespace)
+void  TeleopPanel::updateAssemblyComponentList()
+{
+  std::cerr << "Warning1: " << std::endl;
+  QComboBox* combo_box = composition_components_combo_box_;
+  combo_box->clear();
+  std::vector<std::string> current_active_components;
+  nh_.getParam(assembly_urdf_namespace_+ "/active_description_elements",current_active_components);
+
+  for(std::string name : current_active_components)
+  {
+    std::cerr << "Warning2: "<< name << std::endl;
+    QString param_name_q = QString::fromStdString(name);
+    combo_box->addItem(param_name_q);
+  }
+
+}
+
+void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name_namespace, std::string composition_yaml)
 {
 
 
@@ -501,8 +559,15 @@ void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name
     if(xacro_process)
     {
       // Construct the xacro command
-      std::string xacroCommand = "xacro " + urdf_path + " > tmp.urdf"; //" -o " + outputFile;
+      std::string xacroCommand = "xacro "+ urdf_path ; 
 
+      if(composition_yaml!="None")
+      {
+        xacroCommand = xacroCommand + " yaml_path:='" + composition_yaml + "' ";
+      }
+      
+      xacroCommand = xacroCommand + " > tmp.urdf"; //" -o " + outputFile;
+      std::cerr << "Command: " << xacroCommand << std::endl;
       // Execute the xacro command
       int result = std::system(xacroCommand.c_str());
       
@@ -601,6 +666,9 @@ void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name
     combo_box->addItem(param_name_q);
   }
    // 
+
+
+
 }
 
 void TeleopPanel::onComboBoxIndexChangedBase(int index) {
