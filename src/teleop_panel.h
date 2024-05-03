@@ -125,14 +125,16 @@ public:
   void loadCompositionURDFconfig();
 
   void initEmptyUrdf();
-  void updateAssemblyUrdf(std::string path);
+  void updateAssemblyUrdf(std::string path, std::string yaml_path = "None");
   void updateAssemblyComponentList();
   void addComponentToUrdf();
   void saveGeneratedUrdf();
+  void deleteSelectedElement();
 
   bool setEnabledDisplay(std::string name, bool enabled);
   void onComboBoxIndexChangedBase(int index);
   void onComboBoxIndexChangedComponent(int index); 
+  void onComboBoxIndexChangedComponentsList(int index); 
   void changedSpinBox(std::string parameter_name, double value);
 
   geometry_msgs::TransformStamped createInitTF(std::string parrent, std::string child);
@@ -180,6 +182,7 @@ protected:
   QString file_loading_path_{""};
 
   QComboBox*  composition_components_combo_box_;
+  std::string chosen_component_{"None"};
   
   std::string urdf_path_assembly_;
   std::string urdf_path_new_component_;

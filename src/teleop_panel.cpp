@@ -113,6 +113,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     urdf_managers_[urdf_namespace].pose_transforms.push_back(tf_transform);
 
   }
+
   std::string urdf_namespace = "component_urdf_model";
   connect(urdf_managers_["assembly_urdf_model"].load_urdf_button, &QPushButton::clicked, this, [this]{loadCompositionURDFconfig();});
   connect(urdf_managers_[urdf_namespace].load_urdf_button, &QPushButton::clicked, this, [this, urdf_namespace]{selectUrdfFile(urdf_namespace);});
@@ -140,7 +141,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   //Prepare loading or init composition
 
-  for(std::string urdf_namespace : std::vector<std::string>{"assembly_urdf_model","component_urdf_model"})
+  for(std::string urdf_namespace : std::vector<std::string>{"component_urdf_model"})
   {
     
     QHBoxLayout* chose_urdf_layout = new QHBoxLayout;
@@ -149,6 +150,27 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     urdf_managers_[urdf_namespace].qt_control_layout->addLayout(chose_urdf_layout);
 
   }
+
+  urdf_namespace = "assembly_urdf_model";
+
+  QHBoxLayout* manage_yaml_layout = new QHBoxLayout;
+  manage_yaml_layout->addWidget( urdf_managers_[urdf_namespace].load_urdf_button );
+
+
+  QPushButton *button_save_urdf = new QPushButton("save urdf", this);
+  connect(button_save_urdf, &QPushButton::clicked, this, [this]{saveGeneratedUrdf();});
+
+  QPushButton *button_init_urdf = new QPushButton("Init urdf", this);
+  connect(button_init_urdf, &QPushButton::clicked, this, [this]{initEmptyUrdf();});
+
+  manage_yaml_layout->addWidget( button_init_urdf );
+  
+  manage_yaml_layout->addWidget( button_save_urdf );
+
+  urdf_managers_[urdf_namespace].qt_control_layout->addLayout(manage_yaml_layout);
+
+
+
 
   for(std::string urdf_name : std::vector<std::string>{"assembly","component"})
   {
@@ -180,27 +202,25 @@ TeleopPanel::TeleopPanel( QWidget* parent )
     root_layout->addLayout( urdf_managers_[urdf_namespace].qt_control_layout );
     root_layout->addWidget( new QLabel( "" ));
   }
-
+  urdf_managers_["assembly_urdf_model"].qt_control_layout->addWidget(new QLabel( "Select element:" ));
   composition_components_combo_box_ = new QComboBox(this);
   urdf_managers_["assembly_urdf_model"].qt_control_layout->addWidget(composition_components_combo_box_);
+
+  QPushButton *button_delete_part = new QPushButton("Delete selected element", this);
+  connect(button_delete_part, &QPushButton::clicked, this, [this]{deleteSelectedElement();});
+
+  urdf_managers_["assembly_urdf_model"].qt_control_layout->addWidget(button_delete_part);
+
+  connect(composition_components_combo_box_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedComponentsList);
 
   connect(urdf_managers_["assembly_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedBase);
   connect(urdf_managers_["component_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedComponent);
   
 
-  QPushButton *button_save_urdf = new QPushButton("save urdf", this);
-  connect(button_save_urdf, &QPushButton::clicked, this, [this]{saveGeneratedUrdf();});
-
-  QPushButton *button_init_urdf = new QPushButton("Init urdf", this);
-  connect(button_init_urdf, &QPushButton::clicked, this, [this]{initEmptyUrdf();});
 
   QPushButton *button_add_urdf = new QPushButton("Add urdf", this);
   connect(button_add_urdf, &QPushButton::clicked, this, [this]{addComponentToUrdf();});
 
-  QHBoxLayout* save_urdf_layout = new QHBoxLayout;
-  save_urdf_layout->addWidget( button_init_urdf );
-  save_urdf_layout->addWidget( button_add_urdf );
-  save_urdf_layout->addWidget( button_save_urdf );
 
 
   //PREPARE MOVMENT LAYOUT
@@ -227,6 +247,10 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   // ADD layout for small movment
   root_layout->addLayout( movement_root_layout);
   root_layout->addWidget( new QLabel( "" ));
+
+
+  QHBoxLayout* save_urdf_layout = new QHBoxLayout;
+  save_urdf_layout->addWidget( button_add_urdf );
   root_layout->addLayout( save_urdf_layout );
   
 
@@ -267,10 +291,108 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 }
 
+void TeleopPanel::deleteSelectedElement()
+{
+    //add parameters
+    std::string robot_name = chosen_component_;
+    //check if already exist
+    /*ROS_INFO_STREAM(robot_name);
+
+    if(base_tf_name_ == "map")
+    {
+      base_tf_name_ = "robotic_cell_base";
+    }
+
+    
+
+    KDL::Frame total_trans = KDL::Frame();
+
+    for( auto trans : urdf_managers_["component_urdf_model"].pose_transforms)
+    {
+      tf2::Stamped<tf2::Transform> stamped_transform;
+      tf2::fromMsg(trans, stamped_transform);
+      KDL::Frame kdl_frame;
+      kdl_frame = tf2::transformToKDL(trans);
+      total_trans = total_trans*kdl_frame;
+    }
+
+
+    std::string component_ns = assembly_urdf_namespace_ + "/" + robot_name+ "/";
+    nh_.setParam(component_ns+ "x", total_trans.p.x());
+    nh_.setParam(component_ns+ "y", total_trans.p.y());
+    nh_.setParam(component_ns+ "z", total_trans.p.z());
+
+    double roll, pitch, yaw;    
+    total_trans.M.GetRPY(roll, pitch, yaw);
+    nh_.setParam(component_ns+ "ep",pitch);
+    nh_.setParam(component_ns+ "er",roll);
+    nh_.setParam(component_ns+ "ey",yaw);
+
+
+    nh_.setParam(component_ns+ "package_name",urdf_managers_["component_urdf_model"].urdf_package);
+    nh_.setParam(component_ns+ "parrent", base_tf_name_);
+    nh_.setParam(component_ns+ "urdf_name",  urdf_managers_["component_urdf_model"].urdf_file_name );
+
+    
+
+  */
+    std::vector<std::string> current_active_components;
+
+    nh_.getParam(assembly_urdf_namespace_+ "/active_description_elements",current_active_components);
+    
+    current_active_components.push_back(robot_name);
+
+    std::vector<std::string> new_active_components;
+
+    for(std::string active_component : current_active_components)
+    {
+      if(active_component!=robot_name)
+      {
+        new_active_components.push_back(active_component);
+      }
+      
+    }
+
+
+    nh_.setParam(assembly_urdf_namespace_+ "/active_description_elements",new_active_components);
+
+    std::string yaml_path = workspace_path_ + "/config/active_config.yaml";
+  
+    std::string systemCommand = "rosparam dump " + yaml_path + " " + assembly_urdf_namespace_; //" -o " + outputFile;
+
+    int result = std::system(systemCommand.c_str());
+
+    std::string urdf_path = workspace_path_ + "/urdf/robotic_cell.urdf.xacro";
+    updateAssemblyUrdf(urdf_path);
+
+}
+
 void TeleopPanel::saveGeneratedUrdf()
 {
 
+  QString filePath = QFileDialog::getSaveFileName(this, "Save File", file_loading_path_ , "All Files (*.yaml)");
+  std::string yaml_path = filePath.toStdString();
+  std::string systemCommand = "rosparam dump " + yaml_path + " " + assembly_urdf_namespace_; //" -o " + outputFile;
+  int result = std::system(systemCommand.c_str());
 
+ /* std::cerr << "Loading YAML: " << filePath.toStdString() << std::endl;
+  if (filePath.isEmpty()) {
+
+    std::cerr << "Warning: No file chosen" << filePath.toStdString() << std::endl;
+
+    return;
+  }
+
+  QFileInfo fileInfo(filePath);
+  QString fileName = fileInfo.fileName();
+
+  urdf_managers_["assembly_urdf_model"].id_name->setText(fileName);
+
+  std::string param_name_namespace  = "assembly_urdf_model";
+
+
+  std::string urdf_path = workspace_path_ + "/urdf/robotic_cell.urdf.xacro";
+  updateAssemblyUrdf(urdf_path,filePath.toStdString());*/
 
 }
 
@@ -291,21 +413,21 @@ void TeleopPanel::initEmptyUrdf()
 
 }
 
-void TeleopPanel::updateAssemblyUrdf(std::string path)
+void TeleopPanel::updateAssemblyUrdf(std::string path, std::string yaml_path)
 {
 
-  loadURDFtoParam(path, "assembly_urdf_model");
+  loadURDFtoParam(path, "assembly_urdf_model",yaml_path);
 
 
-
-  std::string yaml_path = workspace_path_ + "/config/active_config.yaml";
+  //std::string yaml_path = workspace_path_ + "/config/active_config.yaml";
   std::string systemCommand = "rosparam load " + yaml_path + " " + assembly_urdf_namespace_; //" -o " + outputFile;
   int result = std::system(systemCommand.c_str());
+  updateAssemblyComponentList();
 }
 
 void TeleopPanel::addComponentToUrdf()
 {
-   ROS_INFO_STREAM("in");
+
   //add parameters
   std::string robot_name = namespace_lineEdit_->text().toStdString();
   //check if already exist
@@ -360,6 +482,7 @@ void TeleopPanel::addComponentToUrdf()
 
   std::string yaml_path = workspace_path_ + "/config/active_config.yaml";
  
+
   std::string systemCommand = "rosparam dump " + yaml_path + " " + assembly_urdf_namespace_; //" -o " + outputFile;
 
   int result = std::system(systemCommand.c_str());
@@ -483,10 +606,9 @@ void TeleopPanel::loadCompositionURDFconfig()
   std::string param_name_namespace  = "assembly_urdf_model";
 
 
-
   std::string urdf_path = workspace_path_ + "/urdf/robotic_cell.urdf.xacro";
+  updateAssemblyUrdf(urdf_path,filePath.toStdString());
 
-  loadURDFtoParam(urdf_path, param_name_namespace, filePath.toStdString());
 
 }
 
@@ -514,10 +636,7 @@ void  TeleopPanel::selectUrdfFile(std::string param_name_namespace)
 
   loadURDFtoParam(urdf_path, param_name_namespace);
    
-  if(param_name_namespace == "assembly_urdf_model")
-  { 
-    updateAssemblyComponentList();
-  }
+
 }
 
 void  TeleopPanel::updateAssemblyComponentList()
@@ -639,7 +758,7 @@ void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name
 
   setEnabledDisplay(urdf_managers_[param_name_namespace].urdf_display_name,true);
 
-  bool use_tf_static{true};
+  bool use_tf_static{false};
   urdf_managers_[param_name_namespace].state_publisher->publishFixedTransforms( param_name_namespace, use_tf_static);
 
 
@@ -691,6 +810,18 @@ void TeleopPanel::onComboBoxIndexChangedBase(int index) {
   updateComponentsTFs();
 }
 
+
+void TeleopPanel::onComboBoxIndexChangedComponentsList(int index) {
+
+
+
+  QString selectedItemText = composition_components_combo_box_->currentText();
+
+
+  chosen_component_ =   selectedItemText.toStdString();
+
+
+}
 
 
 void TeleopPanel::onComboBoxIndexChangedComponent(int index) {
@@ -804,7 +935,8 @@ void TeleopPanel::sendTFs()
       for (std::string joint_name : urdf_manager.joint_names) {
         joint_positions.insert(std::make_pair(joint_name,0));
       }
-
+      bool use_tf_static{false};
+      urdf_manager.state_publisher->publishFixedTransforms( map_pair.first, use_tf_static);
       urdf_manager.state_publisher->publishTransforms(joint_positions, ros::Time::now(), urdf_manager.tf_prefix); 
 
       std::vector<geometry_msgs::TransformStamped> out_tf = std::vector<geometry_msgs::TransformStamped>{};
