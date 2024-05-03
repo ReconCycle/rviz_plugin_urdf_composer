@@ -98,11 +98,10 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   for(std::string urdf_namespace : std::vector<std::string>{"assembly_urdf_model","component_urdf_model"})
   {
-    urdf_managers_[urdf_namespace].id_name = new QLabel( "Not chosen yet" );
-    urdf_managers_[urdf_namespace].load_urdf_button  = new QPushButton("Choose urdf file", this);
+
 
     QComboBox*  chose_urdf_tf_combo_box = new QComboBox(this);
-    chose_urdf_tf_combo_box->addItem("urdf not chosen yet");
+    chose_urdf_tf_combo_box->addItem("urdf not selected yet");
     urdf_managers_[urdf_namespace].tf_combo_box = chose_urdf_tf_combo_box;
     urdf_managers_[urdf_namespace].qt_control_layout = new QVBoxLayout;
 
@@ -114,11 +113,18 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   }
 
+
+
   std::string urdf_namespace = "component_urdf_model";
-  connect(urdf_managers_["assembly_urdf_model"].load_urdf_button, &QPushButton::clicked, this, [this]{loadCompositionURDFconfig();});
+  urdf_managers_[urdf_namespace].id_name = new QLabel( "Not selected yet" );
+  urdf_managers_[urdf_namespace].load_urdf_button  = new QPushButton("Select component urdf file", this);
   connect(urdf_managers_[urdf_namespace].load_urdf_button, &QPushButton::clicked, this, [this, urdf_namespace]{selectUrdfFile(urdf_namespace);});
 
 
+  urdf_namespace = "assembly_urdf_model";
+  urdf_managers_[urdf_namespace].id_name = new QLabel( "Not selected yet" );
+  urdf_managers_[urdf_namespace].load_urdf_button  = new QPushButton("Select config yaml file", this);
+  connect(urdf_managers_["assembly_urdf_model"].load_urdf_button, &QPushButton::clicked, this, [this]{loadCompositionURDFconfig();});
 
 
   QHBoxLayout* title_composition = new QHBoxLayout;
@@ -157,10 +163,10 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   manage_yaml_layout->addWidget( urdf_managers_[urdf_namespace].load_urdf_button );
 
 
-  QPushButton *button_save_urdf = new QPushButton("save urdf", this);
+  QPushButton *button_save_urdf = new QPushButton("Save current config", this);
   connect(button_save_urdf, &QPushButton::clicked, this, [this]{saveGeneratedUrdf();});
 
-  QPushButton *button_init_urdf = new QPushButton("Init urdf", this);
+  QPushButton *button_init_urdf = new QPushButton("Initilize empty config file", this);
   connect(button_init_urdf, &QPushButton::clicked, this, [this]{initEmptyUrdf();});
 
   manage_yaml_layout->addWidget( button_init_urdf );
@@ -295,14 +301,8 @@ void TeleopPanel::deleteSelectedElement()
 {
     //add parameters
     std::string robot_name = chosen_component_;
-    //check if already exist
-    /*ROS_INFO_STREAM(robot_name);
 
-    if(base_tf_name_ == "map")
-    {
-      base_tf_name_ = "robotic_cell_base";
-    }
-
+    /*
     
 
     KDL::Frame total_trans = KDL::Frame();
@@ -351,6 +351,31 @@ void TeleopPanel::deleteSelectedElement()
         new_active_components.push_back(active_component);
       }
       
+    }
+
+    //check if deleted is parent to some modules
+
+     
+
+    for(std::string active_component : new_active_components)
+    {
+      std::string component_ns = assembly_urdf_namespace_ + "/" + active_component+ "/";
+      std::string parrent_name;
+      nh_.getParam(component_ns + "parrent", parrent_name);
+
+      if(parrent_name.find(robot_name) != std::string::npos)
+      {
+
+        ROS_INFO_STREAM(parrent_name);
+
+
+        base_tf_name_;
+
+
+
+      }
+
+
     }
 
 
