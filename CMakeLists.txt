@@ -8,7 +8,7 @@ project(rviz_plugin_urdf_composer)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 #find_package(catkin REQUIRED)
-
+find_package(catkin REQUIRED COMPONENTS std_srvs)
 find_package(catkin REQUIRED COMPONENTS geometry_msgs)
 find_package(catkin REQUIRED COMPONENTS tf2_geometry_msgs)
 find_package(catkin REQUIRED COMPONENTS rviz)
@@ -162,13 +162,17 @@ link_directories(${catkin_LIBRARY_DIRS})
 set(SRC_FILES
   src/gui_robot_state_publisher.cpp
   src/teleop_panel.cpp
+  
 
 )
 
 
-add_library(${PROJECT_NAME} ${SRC_FILES})
+add_library(${PROJECT_NAME}_lib ${SRC_FILES})
+target_link_libraries(${PROJECT_NAME}_lib ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
+add_library(${PROJECT_NAME}_lib2 src/tools.cpp)
+target_link_libraries(${PROJECT_NAME}_lib2  ${catkin_LIBRARIES})
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -195,6 +199,12 @@ target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+
+
+add_executable(module_selection src/reconcycle_module_selection.cpp)
+target_link_libraries(module_selection ${catkin_LIBRARIES} ${PROJECT_NAME}_lib2 )#
+#add_dependencies(module_selection rviz_plugin_urdf_composer_gencpp)
+
 
 #############
 ## Install ##
@@ -240,7 +250,7 @@ target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
 
 install(TARGETS
-  ${PROJECT_NAME}
+  ${PROJECT_NAME}_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -248,7 +258,7 @@ install(TARGETS
 
 install(FILES
   plugin_description.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}) 
 
 install(DIRECTORY media/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/media)
