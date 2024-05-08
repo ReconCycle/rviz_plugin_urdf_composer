@@ -63,6 +63,8 @@
 
 #include <tf2/LinearMath/Vector3.h>
 
+#include "tools.hpp"
+
 namespace rviz_urdf_composer
 {
 
