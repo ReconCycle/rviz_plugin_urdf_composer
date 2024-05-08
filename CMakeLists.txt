@@ -9,12 +9,14 @@ project(rviz_plugin_urdf_composer)
 ## is used, also find other catkin packages
 #find_package(catkin REQUIRED)
 find_package(catkin REQUIRED COMPONENTS std_srvs)
-find_package(catkin REQUIRED COMPONENTS geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS 
+geometry_msgs
+message_generation
+std_msgs)
 find_package(catkin REQUIRED COMPONENTS tf2_geometry_msgs)
 find_package(catkin REQUIRED COMPONENTS rviz)
 find_package(catkin REQUIRED COMPONENTS robot_state_publisher)
 
-catkin_package()
 
 
 ## System dependencies are found with CMake's conventions
@@ -79,11 +81,10 @@ add_definitions(-DQT_NO_KEYWORDS)
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  ManageModules.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -93,10 +94,10 @@ add_definitions(-DQT_NO_KEYWORDS)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -132,6 +133,7 @@ catkin_package(
 #  LIBRARIES rviz_plugin_urdf_composer
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
+CATKIN_DEPENDS message_runtime 
 )
 
 ###########

@@ -1,0 +1,7 @@
+string module_id
+int8 operation
+int8 CONNECT = 0
+int8  DICONNECT = 1 
+---
+
+bool success

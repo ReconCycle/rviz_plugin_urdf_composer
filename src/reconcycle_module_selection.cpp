@@ -4,16 +4,7 @@
 
 #include <ros/package.h>
 
-
-bool add(std_srvs::Trigger::Request  &req,
-         std_srvs::Trigger::Response &res)
-{
-  //res.sum = req.a + req.b;
-  //ROS_INFO("request: x=%ld, y=%ld", (long int)req.a, (long int)req.b);
-  //ROS_INFO("sending back response: [%ld]", (long int)res.sum);
-  return true;
-}
-
+#include <rviz_plugin_urdf_composer/ManageModules.h>
 
 class ModuleSelector
 {
@@ -21,7 +12,7 @@ class ModuleSelector
     public:
         ModuleSelector(): nh_{}
         {
-            service_ =  nh_.advertiseService("add_two_ints", add);
+            service_ =  nh_.advertiseService("add_two_ints", &ModuleSelector::service_callback, this);
 
             /*std::vector<std::string> current_active_components{};
 
@@ -33,6 +24,13 @@ class ModuleSelector
             std::string package_path = ros::package::getPath(package_name);
             workspace_path_ = package_path ;
 
+
+        }
+
+
+        bool service_callback(rviz_plugin_urdf_composer::ManageModules::Request  &req,
+                rviz_plugin_urdf_composer::ManageModules::Response &res)
+        {
 
             std::string yaml_path = workspace_path_ + "/config/active_config.yaml";
 
@@ -53,7 +51,10 @@ class ModuleSelector
 
             nh_.setParam(param_name,fileContent);
             nh_.setParam("robot_description", "my_string");
+            return true;
         }
+
+
 
     private:
         ros::NodeHandle nh_;
