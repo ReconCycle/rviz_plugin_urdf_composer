@@ -1,7 +1,13 @@
-string module_id
+string package_name
+string urdf_name
+string module_name
+string attach_module_name
+string attach_tf_name
+
 int8 operation
-int8 CONNECT = 0
-int8  DICONNECT = 1 
+int8 CONNECT = 1
+int8 DISCONNECT = 2 
+
 ---
 
 bool success

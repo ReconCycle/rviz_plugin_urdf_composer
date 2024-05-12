@@ -47,3 +47,84 @@ std::string stringURDFfromYAMLconfig(std::string urdf_path, std::string composit
     return fileContent;
 }
 
+
+bool writeModuleToParameters(std::shared_ptr<ros::NodeHandle> nh_ptr, std::string module_namespace,
+        std::string package, std::string urdf_name, std::string parrent_name, 
+        double x, double y, double z, double roll, double pitch, double yaw)
+{
+
+  nh_ptr->setParam(module_namespace+ "x", x);
+  nh_ptr->setParam(module_namespace+ "y", y);
+  nh_ptr->setParam(module_namespace+ "z", z);
+
+
+  nh_ptr->setParam(module_namespace+ "ep",pitch);
+  nh_ptr->setParam(module_namespace+ "er",roll);
+  nh_ptr->setParam(module_namespace+ "ey",yaw);
+
+
+  nh_ptr->setParam(module_namespace+ "package_name",package);
+  nh_ptr->setParam(module_namespace+ "parrent", parrent_name);
+  nh_ptr->setParam(module_namespace+ "urdf_name", urdf_name);
+
+  return true;
+}
+
+
+
+GuiRobotStatePublisher::GuiRobotStatePublisher(const KDL::Tree& tree, const urdf::Model& model) : robot_state_publisher::RobotStatePublisher( tree, model)
+{
+
+}
+
+std::vector<std::string> GuiRobotStatePublisher::getSegmentList()
+{
+    std::vector<std::string> segment_list{};
+
+    for( auto segment_pair : segments_fixed_)
+    {
+        segment_list.push_back(segment_pair.first);
+    }
+
+    for( auto segment_pair : segments_)
+    {
+        segment_list.push_back(segment_pair.first);
+    }
+
+    return segment_list;
+}
+
+std::vector<std::string> GuiRobotStatePublisher::getTfNames()
+{
+    std::vector<std::string> segment_list{};
+
+    for( auto segment_pair : segments_fixed_)
+    {
+        std::vector<std::string> both_ends{segment_pair.second.root,segment_pair.second.tip};
+
+        for( auto name : both_ends)
+        {
+            if (std::find(segment_list.begin(), segment_list.end(), name) == segment_list.end()) {
+                segment_list.push_back(name);        
+            }
+        }
+
+    }
+
+
+    for( auto segment_pair : segments_)
+    {
+        std::vector<std::string> both_ends{segment_pair.second.root,segment_pair.second.tip};
+
+        for( auto name : both_ends)
+        {
+            if (std::find(segment_list.begin(), segment_list.end(), name) == segment_list.end()) {
+                segment_list.push_back(name);        
+            }
+        }
+    }
+
+    return segment_list;
+}
+
+

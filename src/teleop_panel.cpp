@@ -481,21 +481,20 @@ void TeleopPanel::addComponentToUrdf()
 
   kdl_frame = tf2::transformToKDL(marker_tf_transform_);*/
 
+  std::shared_ptr<ros::NodeHandle> nh_ptr = std::make_shared<ros::NodeHandle>(nh_);
   std::string component_ns = assembly_urdf_namespace_ + "/" + robot_name+ "/";
-  nh_.setParam(component_ns+ "x", total_trans.p.x());
-  nh_.setParam(component_ns+ "y", total_trans.p.y());
-  nh_.setParam(component_ns+ "z", total_trans.p.z());
-
   double roll, pitch, yaw;    
   total_trans.M.GetRPY(roll, pitch, yaw);
-  nh_.setParam(component_ns+ "ep",pitch);
-  nh_.setParam(component_ns+ "er",roll);
-  nh_.setParam(component_ns+ "ey",yaw);
+
+  writeModuleToParameters(nh_ptr, component_ns, 
+          urdf_managers_["component_urdf_model"].urdf_package, urdf_managers_["component_urdf_model"].urdf_file_name, base_tf_name_, 
+           total_trans.p.x(), total_trans.p.y(), total_trans.p.z(),
+           roll, pitch, yaw);
 
 
-  nh_.setParam(component_ns+ "package_name",urdf_managers_["component_urdf_model"].urdf_package);
-  nh_.setParam(component_ns+ "parrent", base_tf_name_);
-  nh_.setParam(component_ns+ "urdf_name",  urdf_managers_["component_urdf_model"].urdf_file_name );
+
+    
+
 
   std::vector<std::string> current_active_components;
 
@@ -884,7 +883,7 @@ bool TeleopPanel::setEnabledDisplay(std::string name, bool enabled)
      // Access all displays
     //QList<rviz::Display*> displays = vis_manager_->getDisplayFactory()->getDisplays();
 
-    rviz::DisplayGroup * 	 displays =vis_manager_->getRootDisplayGroup();
+    rviz::DisplayGroup * 	 displays = vis_manager_->getRootDisplayGroup();
     int num_of_display = displays->numDisplays();
     for(int i=0;i<num_of_display;i++)
     { 
@@ -1005,8 +1004,6 @@ bool TeleopPanel::findWidgetByName(const std::string& widgetName_str, QLayout* l
 
   return false;
 }
-
-
 
 
 

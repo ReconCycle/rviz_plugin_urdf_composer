@@ -1,0 +1,12 @@
+active_description_elements:
+- module_cnc
+module_cnc:
+  ep: -0.0
+  er: 0.0
+  ey: 0.0
+  package_name: reconcycle_module_cnc
+  parrent: robotic_cell_base
+  urdf_name: reconcycle_module_cnc.urdf.xacro
+  x: 0.0
+  y: 0.0
+  z: 0.9

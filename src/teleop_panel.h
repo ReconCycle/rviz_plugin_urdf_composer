@@ -39,11 +39,11 @@
 
 #include <QVBoxLayout>
 
-#include "robot_state_publisher/robot_state_publisher.h"
+//#include "robot_state_publisher/robot_state_publisher.h"
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 
-#include "gui_robot_state_publisher.h"
+
 
 #include <QPainter>
 #include <QLineEdit>
@@ -158,6 +158,7 @@ public:
   KDL::Vector getUnitVector(KDL::Rotation rotation_matrix,  int axis_index);
 
   QHBoxLayout* createInteractiveSpinBox(std::string name, std::string units, double min, double max );
+
 
   // Next come a couple of public Qt slots.
 public Q_SLOTS:

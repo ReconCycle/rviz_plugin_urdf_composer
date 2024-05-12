@@ -162,7 +162,6 @@ link_directories(${catkin_LIBRARY_DIRS})
 
 
 set(SRC_FILES
-  src/gui_robot_state_publisher.cpp
   src/teleop_panel.cpp
   
 
