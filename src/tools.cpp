@@ -1,6 +1,6 @@
 #include "tools.hpp"
 
-std::string stringURDFfromYAMLconfig(std::string urdf_path, std::string composition_yaml)
+std::string stringURDFfromYAMLconfig(std::string urdf_path, std::string composition_yaml )
 {   
     std::ifstream file(urdf_path);
     if (!file.is_open()) {
@@ -47,6 +47,34 @@ std::string stringURDFfromYAMLconfig(std::string urdf_path, std::string composit
     return fileContent;
 }
 
+
+KDL::Frame calculateTransformKDLTree(KDL::Tree kdl_tree, std::string link_name)
+{
+
+
+    KDL::Chain kdlChain = KDL::Chain();
+
+
+    kdl_tree.getChain(GetTreeElementSegment(kdl_tree.getRootSegment()->second).getName(),link_name,kdlChain);
+
+    int number_of_joints = kdlChain.getNrOfJoints();
+
+    KDL::JntArray jointAngles = KDL::JntArray(number_of_joints);
+    for(int i = 0; i<number_of_joints; i++)
+    {
+        jointAngles(i) = 0.0;
+    }
+
+    //
+    // Perform Forward Kinematics
+    //
+
+    KDL::ChainFkSolverPos_recursive FKSolver = KDL::ChainFkSolverPos_recursive(kdlChain);
+    KDL::Frame eeFrame;
+    FKSolver.JntToCart(jointAngles, eeFrame);
+
+    return eeFrame;
+}
 
 bool writeModuleToParameters(std::shared_ptr<ros::NodeHandle> nh_ptr, std::string module_namespace,
         std::string package, std::string urdf_name, std::string parrent_name, 

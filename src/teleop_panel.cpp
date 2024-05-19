@@ -43,9 +43,8 @@
 #include <rviz/display_group.h>
 
 #include <kdl/chainfksolverpos_recursive.hpp>
-
-
 #include <kdl/frames.hpp>
+
 #include <tf2_kdl/tf2_kdl.h>
 #include <tf2/convert.h>
 
@@ -852,7 +851,7 @@ bool  TeleopPanel::updateComponentsTFs()
   KDL::JntArray jointAngles = KDL::JntArray(number_of_joints);
   for(int i = 0; i<number_of_joints; i++)
   {
-    jointAngles(0) = 0.0;
+    jointAngles(i) = 0.0;
   }
 
   //

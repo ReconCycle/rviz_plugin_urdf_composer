@@ -160,11 +160,8 @@ link_directories(${catkin_LIBRARY_DIRS})
 
 
 
-
 set(SRC_FILES
   src/teleop_panel.cpp
-  
-
 )
 
 

@@ -1,8 +1,9 @@
 string package_name
 string urdf_name
 string module_name
-string attach_module_name
-string attach_tf_name
+int8 module_plug_id
+string parrent_module_name
+int8 parrent_module_plug_id
 
 int8 operation
 int8 CONNECT = 1

@@ -8,6 +8,8 @@
 
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
+#include <kdl/frames.hpp>
 
 #include <rviz_plugin_urdf_composer/ManageModules.h>
 
@@ -66,13 +68,11 @@ class ModuleSelector
             
             std::string base_filename = urdf_path.substr(urdf_path.find_last_of("/") + 1);
 
-            std::string param_name_namespace = "test";
+            std::string param_name_namespace = tf_namespace_;
 
             std::string param_name = "/" + param_name_namespace + "/robot_description";
 
             nh_.setParam(param_name,fileContent);
-            nh_.setParam("robot_description", "my_string");
-
 
 
             // fill robot_state_publisher
@@ -81,8 +81,7 @@ class ModuleSelector
 
             urdf_model.initString(fileContent);
 
-            KDL::Tree tree;
-            if (!kdl_parser::treeFromUrdfModel(urdf_model, tree)) {
+            if (!kdl_parser::treeFromUrdfModel(urdf_model, composition_kdl_tree_)) {
                 ROS_ERROR("Failed to extract kdl tree from xml robot description");
 
             }
@@ -96,7 +95,7 @@ class ModuleSelector
             int result = std::system(systemCommand.c_str());
 
 
-            robot_state_publisher_ = std::make_shared<GuiRobotStatePublisher>(tree, urdf_model);
+            robot_state_publisher_ = std::make_shared<GuiRobotStatePublisher>(composition_kdl_tree_, urdf_model);
 
         }
 
@@ -113,17 +112,62 @@ class ModuleSelector
             
             std::string package_name = "reconcycle_module_camera_desk";
             std::string parrent = "robotic_cell_base";
+            std::string parrent_module_name = "module_cnc";
             std::string urdf_name =  "reconcycle_module_camera_desk.urdf.xacro";
 
             std::shared_ptr<ros::NodeHandle> nh_ptr = std::make_shared<ros::NodeHandle>(nh_);
 
+            int module_plug_id = 1;
+            int parrent_module_plug_id = 1;
+
+            std::string parrent_plug_id = std::to_string(parrent_module_plug_id);
+            if(parrent_module_plug_id==3)
+            {
+                std::string parrent_plug_id = "";
+            }
+            std::string parrent_tf_name =  parrent_module_name + "_pnpf" + parrent_plug_id;
+            std::string module_tf_name = "pnpm" + std::to_string(module_plug_id); //tf_namespace_ + "/" + module_name + "_pnpm" + std::to_string(module_plug_id);
+
+            ROS_ERROR_STREAM(parrent_tf_name);
+
+            ///////////////////////////////
+
+
+            
+            KDL::Frame eeFrameComp = calculateTransformKDLTree(composition_kdl_tree_, parrent_tf_name);
+
+            //Calculte component plug tf
+            std::string package_path = ros::package::getPath(package_name);
+            
+            std::string urdf_path = package_path + "/urdf/" + urdf_name ; 
+
+            std::string component_string_urdf = stringURDFfromYAMLconfig(urdf_path);
+
+            urdf::Model urdf_model;
+            urdf_model.initString(component_string_urdf);
+            KDL::Tree kdl_tree;
+
+            if (!kdl_parser::treeFromUrdfModel(urdf_model, kdl_tree)) {
+                ROS_ERROR("Failed to extract kdl tree from xml robot description");
+
+            }
+
+            KDL::Frame eeFrame = calculateTransformKDLTree(kdl_tree,module_tf_name);
+            KDL::Frame total_trans = KDL::Frame();
+            total_trans = eeFrameComp*eeFrame.Inverse();
+
+            double roll, pitch, yaw;    
+            total_trans.M.GetRPY(roll, pitch, yaw);
+
+
             writeModuleToParameters(nh_ptr, assembly_urdf_namespace_ + "/" + module_name+ "/", 
                     package_name, urdf_name, parrent, 
-                    0, 0, 0,
-                    0, 0, 0);
+                    total_trans.p.x(), total_trans.p.y(), total_trans.p.z(),
+                    roll, pitch, yaw);
 
-    
-
+            ROS_INFO_STREAM(total_trans.p.x());
+            ROS_INFO_STREAM(total_trans.p.y());
+            ROS_INFO_STREAM(total_trans.p.z());
             if(req.operation == req.CONNECT)
             {
                 for(std::string active_component : current_active_components)
@@ -174,7 +218,10 @@ class ModuleSelector
         std::string workspace_path_;
         ros::Timer timer_;
 
+         KDL::Tree composition_kdl_tree_;
+
         std::string assembly_urdf_namespace_{"reconcycle_modules"};
+
         std::string tf_namespace_{"test"};
         std::vector<std::string> joint_names_;
 };
