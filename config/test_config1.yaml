@@ -1,0 +1,23 @@
+active_description_elements:
+- new_robot1
+- new_robot2
+new_robot1:
+  ep: -0.0
+  er: 0.0
+  ey: 0.0
+  package_name: reco_module
+  parrent: robotic_cell_base
+  urdf_name: reco_module.urdf.xacro
+  x: 0.021210551261901855
+  y: -0.037094950675964355
+  z: 0.79
+new_robot2:
+  ep: -0.0
+  er: 0.0
+  ey: 0.0
+  package_name: reco_module
+  parrent: new_robot1_base
+  urdf_name: reco_module.urdf.xacro
+  x: -1.809999942779541
+  y: -0.3400000035762787
+  z: -0.619331419467926

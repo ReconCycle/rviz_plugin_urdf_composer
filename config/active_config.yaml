@@ -1,23 +1,34 @@
 active_description_elements:
-- new_robot3
-- new_robot33
-new_robot3:
-  ep: -0.0
-  er: 0.0
-  ey: 0.0
-  package_name: reco_module
+- module_cnc
+- camera_module
+- camera_module2
+camera_module:
+  ep: 2.6650878311612885e-15
+  er: -6.9731191278559e-14
+  ey: 3.1409659093859665
+  package_name: reconcycle_module_camera_desk
   parrent: robotic_cell_base
-  urdf_name: reco_module.urdf.xacro
-  x: -3.741522789001465
-  y: 0.6954865455627441
-  z: 0.3932538628578186
-new_robot33:
+  urdf_name: reconcycle_module_camera_desk.urdf.xacro
+  x: 0.6003759551697504
+  y: 1.1997084461218304
+  z: 0.9000000000000453
+camera_module2:
+  ep: 2.6650878311612885e-15
+  er: -6.9731191278559e-14
+  ey: 3.1409659093859665
+  package_name: reconcycle_module_camera_desk
+  parrent: robotic_cell_base
+  urdf_name: reconcycle_module_camera_desk.urdf.xacro
+  x: 0.6003759551697504
+  y: 1.1997084461218304
+  z: 0.9000000000000453
+module_cnc:
   ep: -0.0
   er: 0.0
   ey: 0.0
-  package_name: reco_module
-  parrent: new_robot3_pnpm2
-  urdf_name: reco_module.urdf.xacro
-  x: -0.8624598979949951
-  y: 0.4717121124267578
-  z: 3.750365734100342
+  package_name: reconcycle_module_cnc
+  parrent: robotic_cell_base
+  urdf_name: reconcycle_module_cnc.urdf.xacro
+  x: 0.0
+  y: 0.0
+  z: 0.9

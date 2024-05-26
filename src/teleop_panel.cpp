@@ -1005,7 +1005,6 @@ bool TeleopPanel::findWidgetByName(const std::string& widgetName_str, QLayout* l
 }
 
 
-
 } // end namespace rviz_plugin_tutorials
 
 // Tell pluginlib about this class.  Every class which should be

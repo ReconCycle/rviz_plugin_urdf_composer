@@ -12,7 +12,8 @@ find_package(catkin REQUIRED COMPONENTS std_srvs)
 find_package(catkin REQUIRED COMPONENTS 
 geometry_msgs
 message_generation
-std_msgs)
+std_msgs
+pluginlib)
 find_package(catkin REQUIRED COMPONENTS tf2_geometry_msgs)
 find_package(catkin REQUIRED COMPONENTS rviz)
 find_package(catkin REQUIRED COMPONENTS robot_state_publisher)
@@ -130,7 +131,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES rviz_plugin_urdf_composer
+LIBRARIES rviz_plugin_urdf_composer
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 CATKIN_DEPENDS message_runtime 
@@ -162,11 +163,12 @@ link_directories(${catkin_LIBRARY_DIRS})
 
 set(SRC_FILES
   src/teleop_panel.cpp
+  src/urdf_vis_update.cpp
 )
 
 
-add_library(${PROJECT_NAME}_lib ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME}_lib ${QT_LIBRARIES} ${catkin_LIBRARIES})
+add_library(${PROJECT_NAME} ${SRC_FILES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 
 add_library(${PROJECT_NAME}_lib2 src/tools.cpp)
 target_link_libraries(${PROJECT_NAME}_lib2  ${catkin_LIBRARIES})
@@ -248,7 +250,7 @@ target_link_libraries(module_selection ${catkin_LIBRARIES} ${PROJECT_NAME}_lib2 
 
 
 install(TARGETS
-  ${PROJECT_NAME}_lib
+  ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

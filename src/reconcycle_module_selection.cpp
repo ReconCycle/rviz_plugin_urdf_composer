@@ -20,6 +20,7 @@ class ModuleSelector
         ModuleSelector(): nh_{}
         {
             service_ =  nh_.advertiseService("manage_modules", &ModuleSelector::service_callback, this);
+            service_client_update_ = nh_.serviceClient<std_srvs::Trigger>("update_vis_urdf");
 
             /*std::vector<std::string> current_active_components{};
 
@@ -33,7 +34,17 @@ class ModuleSelector
 
             timer_ = nh_.createTimer(ros::Duration(0.1), &ModuleSelector::timerCallback, this);
 
+
+
             updateURDFfromYAML("base_config");
+
+            // Wait for the service to become available
+            ROS_INFO("Waiting for the update_vis_urdf service to become available...");
+            service_client_update_.waitForExistence();
+            ROS_INFO("Service is now available.");
+            std_srvs::Trigger srv;
+            service_client_update_.call(srv);
+
 
         }
 
@@ -70,7 +81,7 @@ class ModuleSelector
 
             std::string param_name_namespace = tf_namespace_;
 
-            std::string param_name = "/" + param_name_namespace + "/robot_description";
+            std::string param_name = "/" + param_name_namespace + "/robot_description";//
 
             nh_.setParam(param_name,fileContent);
 
@@ -204,6 +215,8 @@ class ModuleSelector
 
 
             updateURDFfromYAML("active_config");
+            std_srvs::Trigger srv;
+            service_client_update_.call(srv);
 
             return true;
         }
@@ -214,6 +227,7 @@ class ModuleSelector
     private:
         ros::NodeHandle nh_;
         ros::ServiceServer service_;
+        ros::ServiceClient service_client_update_;
         std::shared_ptr<GuiRobotStatePublisher> robot_state_publisher_;
         std::string workspace_path_;
         ros::Timer timer_;
@@ -222,7 +236,7 @@ class ModuleSelector
 
         std::string assembly_urdf_namespace_{"reconcycle_modules"};
 
-        std::string tf_namespace_{"test"};
+        std::string tf_namespace_{"reconcycle_cell"};
         std::vector<std::string> joint_names_;
 };
 
