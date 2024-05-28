@@ -14,6 +14,6 @@ xacro robot_arm.urdf_xacro > tmp.urdf
 
  rosservice call /manage_modules reconcycle_module_camera_desk reconcycle_module_camera_desk.urdf.xacro camera_module 1 module_cnc 1 1
 
-  rosservice call /manage_modules reconcycle_module_camera_desk reconcycle_module_camera_desk.urdf.xacro camera_module2 3 module_cnc 3 1
+  rosservice call /manage_modules reconcycle_module_camera_desk reconcycle_module_camera_desk.urdf.xacro camera_module2 2 module_cnc 2 1
 
  rosservice call /manage_modules reconcycle_module_camera_desk reconcycle_module_camera_desk.urdf.xacro camera_module 1 module_cnc 1 2

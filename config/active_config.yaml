@@ -1,27 +1,35 @@
 active_description_elements:
 - module_cnc
-- camera_module
-- camera_module2
-camera_module:
-  ep: 2.6650878311612885e-15
-  er: -6.9731191278559e-14
-  ey: 3.1409659093859665
-  package_name: reconcycle_module_camera_desk
-  parrent: robotic_cell_base
-  urdf_name: reconcycle_module_camera_desk.urdf.xacro
-  x: 0.6003759551697504
-  y: 1.1997084461218304
-  z: 0.9000000000000453
 camera_module2:
-  ep: 2.6650878311612885e-15
-  er: -6.9731191278559e-14
-  ey: 3.1409659093859665
+  ep: -8.493570801435098e-15
+  er: -7.033202236377835e-14
+  ey: 3.1365986228988096
   package_name: reconcycle_module_camera_desk
   parrent: robotic_cell_base
   urdf_name: reconcycle_module_camera_desk.urdf.xacro
-  x: 0.6003759551697504
-  y: 1.1997084461218304
-  z: 0.9000000000000453
+  x: 0.5999983165303904
+  y: -0.0006741913408544796
+  z: 0.8999999999999995
+camera_module4:
+  ep: 4.440892098494979e-16
+  er: -7.646350273789984e-14
+  ey: -3.1415926535897905
+  package_name: reconcycle_module_camera_desk
+  parrent: robotic_cell_base
+  urdf_name: reconcycle_module_camera_desk.urdf.xacro
+  x: 1.20000000000001
+  y: 0.6000000000000095
+  z: 0.9000000000000231
+camera_module5:
+  ep: 8.937660011284399e-15
+  er: -6.1314803741214645e-15
+  ey: -0.004994030690980772
+  package_name: reconcycle_module_camera_desk
+  parrent: robotic_cell_base
+  urdf_name: reconcycle_module_camera_desk.urdf.xacro
+  x: -0.6029831252545172
+  y: -0.5946738973350076
+  z: 0.8999999999999906
 module_cnc:
   ep: -0.0
   er: 0.0

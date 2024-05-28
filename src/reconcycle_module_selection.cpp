@@ -121,26 +121,30 @@ class ModuleSelector
 
             std::vector<std::string> new_active_components;
             
-            std::string package_name = "reconcycle_module_camera_desk";
+            std::string package_name = req.package_name ;// "reconcycle_module_camera_desk";
             std::string parrent = "robotic_cell_base";
-            std::string parrent_module_name = "module_cnc";
-            std::string urdf_name =  "reconcycle_module_camera_desk.urdf.xacro";
+            std::string parrent_module_name = req.parrent_module_name; // "module_cnc";
+            std::string urdf_name = req.urdf_name ;// "reconcycle_module_camera_desk.urdf.xacro";
 
             std::shared_ptr<ros::NodeHandle> nh_ptr = std::make_shared<ros::NodeHandle>(nh_);
 
-            int module_plug_id = 1;
-            int parrent_module_plug_id = 1;
+            int module_plug_id = req.module_plug_id;
+            int parrent_module_plug_id = req.parrent_module_plug_id;
 
             std::string parrent_plug_id = std::to_string(parrent_module_plug_id);
+            ROS_ERROR_STREAM(parrent_module_plug_id);
             if(parrent_module_plug_id==3)
             {
-                std::string parrent_plug_id = "";
+                parrent_plug_id = "";
             }
+
+          
+ 
             std::string parrent_tf_name =  parrent_module_name + "_pnpf" + parrent_plug_id;
             std::string module_tf_name = "pnpm" + std::to_string(module_plug_id); //tf_namespace_ + "/" + module_name + "_pnpm" + std::to_string(module_plug_id);
 
             ROS_ERROR_STREAM(parrent_tf_name);
-
+ ROS_ERROR_STREAM(module_tf_name);
             ///////////////////////////////
 
 
