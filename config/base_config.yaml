@@ -37,9 +37,9 @@ module_camera_desk:
   ep: 1.219486516859461e-14
   er: -7.633444092397105e-14
   ey: 3.1370079023605464
-  package_name: reconcycle_module_robot_desk
+  package_name: reconcycle_module_camera_desk
   parrent: robotic_cell_base
-  urdf_name: reconcycle_module_robot_desk.urdf.xacro
+  urdf_name: reconcycle_module_camera_desk.urdf.xacro
   x: 1.1999985811562883
   y: -0.0006189392475978906
   z: 0.9000000000000018

@@ -133,10 +133,10 @@ class ModuleSelector
 
             std::string parrent_plug_id = std::to_string(parrent_module_plug_id);
             ROS_ERROR_STREAM(parrent_module_plug_id);
-            if(parrent_module_plug_id==3)
+            /*if(parrent_module_plug_id==3)
             {
                 parrent_plug_id = "";
-            }
+            }*/
 
           
  
