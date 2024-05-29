@@ -123,13 +123,13 @@ class ModuleSelector
             
             std::string package_name = req.package_name ;// "reconcycle_module_camera_desk";
             std::string parrent = "robotic_cell_base";
-            std::string parrent_module_name = req.parrent_module_name; // "module_cnc";
+            std::string parrent_module_name = req.parent_module_name; // "module_cnc";
             std::string urdf_name = req.urdf_name ;// "reconcycle_module_camera_desk.urdf.xacro";
 
             std::shared_ptr<ros::NodeHandle> nh_ptr = std::make_shared<ros::NodeHandle>(nh_);
 
             int module_plug_id = req.module_plug_id;
-            int parrent_module_plug_id = req.parrent_module_plug_id;
+            int parrent_module_plug_id = req.parent_module_plug_id;
 
             std::string parrent_plug_id = std::to_string(parrent_module_plug_id);
             ROS_ERROR_STREAM(parrent_module_plug_id);
