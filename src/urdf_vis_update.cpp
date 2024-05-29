@@ -104,10 +104,10 @@ bool UrdfVisUpdate::service_callback(std_srvs::Trigger::Request  &req,
       //ROS_INFO_STREAM("dis: " << panel_name);
     }
     
-    vis_manager_->setFixedFrame("/reconcycle_cell/robotic_cell_base");
+    vis_manager_->setFixedFrame("world");///reconcycle_cell/robotic_cell_base
     urdf_display_ =  vis_manager_->createDisplay("rviz/RobotModel", QString::fromStdString(display_name), true);
-    urdf_display_->subProp("Robot Description")->setValue(QString("/reconcycle_cell/robot_description"));
-    urdf_display_->subProp("TF Prefix")->setValue(QString("reconcycle_cell"));
+    urdf_display_->subProp("Robot Description")->setValue(QString("/reconcycle_generic/robot_description"));// /reconcycle_cell/robot_description
+    urdf_display_->subProp("TF Prefix")->setValue(QString("reconcycle_generic"));// reconcycle_cell
 
     ROS_INFO_STREAM("test2!");
   return true;

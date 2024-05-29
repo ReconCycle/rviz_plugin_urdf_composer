@@ -240,7 +240,7 @@ class ModuleSelector
 
         std::string assembly_urdf_namespace_{"reconcycle_modules"};
 
-        std::string tf_namespace_{"reconcycle_cell"};
+        std::string tf_namespace_{"reconcycle_generic"}; //{"reconcycle_cell"};
         std::vector<std::string> joint_names_;
 };
 
