@@ -18,4 +18,4 @@ xacro robot_arm.urdf_xacro > tmp.urdf
 
  rosservice call /manage_modules reconcycle_module_camera_desk reconcycle_module_camera_desk.urdf.xacro camera_module 1 module_cnc 1 2
 
- rosrun rviz_plugin_urdf_composer reconcycle_module_selection
+ rosrun rviz_plugin_urdf_composer module_selection
