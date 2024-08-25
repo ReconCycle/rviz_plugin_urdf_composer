@@ -647,7 +647,7 @@ void  UrdfComposer::selectUrdfFile(std::string param_name_namespace)
 
 void  UrdfComposer::updateAssemblyComponentList()
 {
-  std::cerr << "Warning1: " << std::endl;
+  //std::cerr << "Warning1: " << std::endl;
   QComboBox* combo_box = composition_components_combo_box_;
   combo_box->clear();
   std::vector<std::string> current_active_components;
@@ -655,7 +655,7 @@ void  UrdfComposer::updateAssemblyComponentList()
 
   for(std::string name : current_active_components)
   {
-    std::cerr << "Warning2: "<< name << std::endl;
+    std::cerr << "Current active compnenets: "<< name << std::endl;
     QString param_name_q = QString::fromStdString(name);
     combo_box->addItem(param_name_q);
   }
@@ -745,11 +745,22 @@ void  UrdfComposer::loadURDFtoParam(std::string urdf_path, std::string param_nam
   QComboBox* combo_box = urdf_managers_[param_name_namespace].tf_combo_box;
   combo_box->clear();
   //ROS_INFO_STREAM("box2");
+
+
   for(std::string name : tf_names)
   {
     QString param_name_q = QString::fromStdString(name);
     combo_box->addItem(param_name_q);
   }
+
+
+  //HACK::
+  if(tf_names.size()==0)
+  {
+    combo_box->addItem("robotic_cell_base");
+  }
+
+
    // 
 
 
