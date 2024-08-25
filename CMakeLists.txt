@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS rviz)
 find_package(catkin REQUIRED COMPONENTS robot_state_publisher)
 
 
-find_package(catkin REQUIRED COMPONENTS OGRE)
+#find_package(catkin REQUIRED COMPONENTS OGRE)
 
 set(OGRE_INCLUDE_DIRS /usr/include/OGRE)
 set(OGRE_LIBRARIES /usr/lib/libOgreMain.so)
