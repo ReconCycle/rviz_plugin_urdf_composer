@@ -17,3 +17,22 @@ xacro robot_arm.urdf_xacro > tmp.urdf
   rosservice call /manage_modules reconcycle_module_camera_desk reconcycle_module_camera_desk.urdf.xacro camera_module2 2 module_cnc 2 1
 
  rosservice call /manage_modules reconcycle_module_camera_desk reconcycle_module_camera_desk.urdf.xacro camera_module 1 module_cnc 1 2
+
+ rosrun rviz_plugin_urdf_composer reconcycle_module_selection
+
+rosservice call /manage_modules reconcycle_module_robot_desk reconcycle_module_robot_desk.urdf.xacro module_robot1 1 module_cnc 1 1
+
+
+module_robot1:
+    er: 0.0
+    ep: -1.5707963267948886
+    ey: -3.2029886157149005e-14
+    package_name: reconcycle_module_robot_desk
+    parent: module_cnc_pnpf2
+    urdf_name: reconcycle_module_robot_desk.urdf.xacro
+    x: -0.06699999999999115
+    y: -0.13499999999999734
+    z: -0.6000000000000014
+
+
+ett

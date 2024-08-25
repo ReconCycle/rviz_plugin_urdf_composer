@@ -1,14 +1,12 @@
-string package_name
-string urdf_name
-string module_name
-int8 module_plug_id
-string parrent_module_name
-int8 parrent_module_plug_id
+string package_name        # path with robot description (urdf+meshes)
+string urdf_name           # urdf file name
+string module_name         # needs to be unique
+int8 module_plug_id        # table pnp id (1-4)
+string parent_module_name 
+int8 parent_module_plug_id 
 
-int8 operation
+int8 operation             # attach / remove module 
 int8 CONNECT = 1
 int8 DISCONNECT = 2 
-
 ---
-
 bool success

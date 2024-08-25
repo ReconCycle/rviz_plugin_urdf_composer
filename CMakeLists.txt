@@ -18,7 +18,13 @@ find_package(catkin REQUIRED COMPONENTS tf2_geometry_msgs)
 find_package(catkin REQUIRED COMPONENTS rviz)
 find_package(catkin REQUIRED COMPONENTS robot_state_publisher)
 
+
 find_package(catkin REQUIRED COMPONENTS OGRE)
+
+set(OGRE_INCLUDE_DIRS /usr/include/OGRE)
+set(OGRE_LIBRARIES /usr/lib/libOgreMain.so)
+
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -133,7 +139,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 LIBRARIES rviz_plugin_urdf_composer
 #  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+DEPENDS OGRE
 CATKIN_DEPENDS message_runtime 
 )
 
@@ -150,6 +156,7 @@ CATKIN_DEPENDS message_runtime
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OGRE_INCLUDE_DIRS}
   )
 
 link_directories(${catkin_LIBRARY_DIRS})
