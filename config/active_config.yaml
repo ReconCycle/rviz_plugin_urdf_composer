@@ -2,67 +2,16 @@ active_description_elements:
 - module_cnc
 - module_robot1
 - module_robot2
-- module_camera_desk
-camera_module:
-  ep: 2.6650878311612885e-15
-  er: -6.9731191278559e-14
-  ey: 3.1409659093859665
-  package_name: reconcycle_module_camera_desk
-  parrent: robotic_cell_base
-  urdf_name: reconcycle_module_camera_desk.urdf.xacro
-  x: 0.6003759551697504
-  y: 1.1997084461218304
-  z: 0.9000000000000453
-camera_module2:
-  ep: 4.440892098494979e-16
-  er: -7.646350273789984e-14
-  ey: -3.1415926535897905
-  package_name: reconcycle_module_camera_desk
-  parrent: robotic_cell_base
-  urdf_name: reconcycle_module_camera_desk.urdf.xacro
-  x: 1.20000000000001
-  y: 0.6000000000000095
-  z: 0.9000000000000231
-camera_module4:
-  ep: 4.1131342745274644e-14
-  er: -2.2789215220494262e-14
-  ey: -1.572636589715667
-  package_name: reconcycle_module_camera_desk
-  parrent: robotic_cell_base
-  urdf_name: reconcycle_module_camera_desk.urdf.xacro
-  x: 0.6011043857224869
-  y: 1.2002474193841008
-  z: 0.9000000000000455
 module_camera_desk:
-  ep: 1.219486516859461e-14
-  er: -7.633444092397105e-14
-  ey: 3.1370079023605464
+  ep: -0.0031537677702183006
+  er: -1.5707963267949316
+  ey: 1.5707963267948961
   package_name: reconcycle_module_camera_desk
-  parrent: robotic_cell_base
+  parrent: module_robot2_pnpf1
   urdf_name: reconcycle_module_camera_desk.urdf.xacro
-  x: 1.1999985811562883
-  y: -0.0006189392475978906
-  z: 0.9000000000000018
-module_camera_desk2:
-  ep: 2.268921762540596e-15
-  er: 6.7325747719122166e-15
-  ey: -0.0006267442038240194
-  package_name: reconcycle_module_robot_desk
-  parrent: robotic_cell_base
-  urdf_name: reconcycle_module_robot_desk.urdf.xacro
-  x: 0.599624044830263
-  y: -0.5997084461218224
-  z: 0.8999999999999764
-module_camera_desk4:
-  ep: 4.5962735478838406e-14
-  er: 1.6003667353787455e-15
-  ey: -0.0020720473311210356
-  package_name: reconcycle_module_robot_desk
-  parrent: robotic_cell_base
-  urdf_name: reconcycle_module_robot_desk.urdf.xacro
-  x: -0.0018638433866467463
-  y: -1.1990348886634388
-  z: 0.8999999999999795
+  x: -0.06699999999999258
+  y: -0.1349993286286016
+  z: -0.0004257579431924487
 module_cnc:
   ep: -0.0
   er: 0.0
@@ -74,22 +23,32 @@ module_cnc:
   y: 0.0
   z: 0.9
 module_robot1:
-  ep: 4.440892098494979e-16
-  er: -7.646350273789984e-14
-  ey: -3.1415926535897905
+  ep: -0.0008042392552043968
+  er: 1.5707963267948624
+  ey: -1.5707963267948828
   package_name: reconcycle_module_robot_desk
-  parrent: robotic_cell_base
+  parrent: module_cnc_pnpf
   urdf_name: reconcycle_module_robot_desk.urdf.xacro
-  x: 1.20000000000001
-  y: 0.6000000000000095
-  z: 0.9000000000000231
+  x: -0.06699999999999896
+  y: 0.4645173061177243
+  z: -0.6003737771731353
 module_robot2:
-  ep: 2.2980953234929267e-14
-  er: 8.120879891766841e-16
-  ey: -0.0010360236655605176
+  ep: -1.5707963267948886
+  er: 0.0
+  ey: -3.2029886157149005e-14
   package_name: reconcycle_module_robot_desk
-  parrent: robotic_cell_base
+  parrent: module_cnc_pnpf2
   urdf_name: reconcycle_module_robot_desk.urdf.xacro
-  x: -0.0006213645354234409
-  y: -0.5995179270782269
-  z: 0.8999999999999899
+  x: -0.06699999999999115
+  y: -0.13499999999999734
+  z: -0.6000000000000014
+new_robot:
+  ep: -1.2126547642856798
+  er: -1.5707963267949405
+  ey: 1.5707963267948957
+  package_name: reconcycle_module_vise
+  parrent: module_cnc_pnpm3
+  urdf_name: reconcycle_module_vise.urdf.xacro
+  x: -0.06700039115547418
+  y: 1.9648948630367993
+  z: -1.1764372795396754

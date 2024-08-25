@@ -1,0 +1,8 @@
+<launch>
+  <!-- Set the path to your RViz configuration file -->
+  <arg name="rviz_config" default="$(find rviz_plugin_urdf_composer)/rviz/test2.rviz"/>
+
+  <!-- Launch RViz with the specific configuration -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" output="screen"/>
+
+</launch>
