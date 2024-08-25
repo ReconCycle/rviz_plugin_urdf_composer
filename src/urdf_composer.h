@@ -97,7 +97,7 @@ struct UrdfManager
 };
 
 
-class TeleopPanel: public rviz::Panel
+class UrdfComposer: public rviz::Panel
 {
 // This class uses Qt slots and is a subclass of QObject, so it needs
 // the Q_OBJECT macro.
@@ -112,7 +112,7 @@ public:
   // a default of 0 lets the default constructor work and also lets
   // someone using the class for something else to pass in a parent
   // widget as they normally would with Qt.
-  TeleopPanel( QWidget* parent = 0 );
+  UrdfComposer( QWidget* parent = 0 );
 
   // Now we declare overrides of rviz::Panel functions for saving and
   // loading data from the config file.  Here the data is the

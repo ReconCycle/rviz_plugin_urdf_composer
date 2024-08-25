@@ -19,7 +19,7 @@
 
 #include <math.h>
 
-#include "teleop_panel.h"
+#include "urdf_composer.h"
 
 using namespace visualization_msgs;
 
@@ -29,7 +29,7 @@ namespace rviz_urdf_composer
 {
 
 // %Tag(Box)%
-Marker TeleopPanel::makeBox( InteractiveMarker &msg )
+Marker UrdfComposer::makeBox( InteractiveMarker &msg )
 {
   Marker marker;
 
@@ -45,7 +45,7 @@ Marker TeleopPanel::makeBox( InteractiveMarker &msg )
   return marker;
 }
 
-InteractiveMarkerControl& TeleopPanel::makeBoxControl( InteractiveMarker &msg )
+InteractiveMarkerControl& UrdfComposer::makeBoxControl( InteractiveMarker &msg )
 {
   InteractiveMarkerControl control;
   control.always_visible = true;
@@ -57,7 +57,7 @@ InteractiveMarkerControl& TeleopPanel::makeBoxControl( InteractiveMarker &msg )
 // %EndTag(Box)%
 
 // %Tag(frameCallback)%
-void TeleopPanel::frameCallback()
+void UrdfComposer::frameCallback()
 {
 
 
@@ -92,7 +92,7 @@ void TeleopPanel::frameCallback()
 // %EndTag(frameCallback)%
 
 // %Tag(processFeedback)%
-void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)// )
+void UrdfComposer::processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)// )
 {
   std::ostringstream s;
   s << "Feedback from marker '" << feedback->marker_name << "' "
@@ -187,7 +187,7 @@ void TeleopPanel::processFeedback(const visualization_msgs::InteractiveMarkerFee
   interactive_marker_server_->applyChanges(); /**/
 }
 
-double TeleopPanel::calculateAbsoluteAngle(KDL::Rotation rotation_matrix,  int axis_index)
+double UrdfComposer::calculateAbsoluteAngle(KDL::Rotation rotation_matrix,  int axis_index)
 {
   ROS_INFO_STREAM( "Index" <<axis_index );
   KDL::Vector direction_vector{0,0,0};
@@ -233,7 +233,7 @@ double TeleopPanel::calculateAbsoluteAngle(KDL::Rotation rotation_matrix,  int a
   return angle;
 }
 
-KDL::Vector TeleopPanel::getUnitVector(KDL::Rotation rotation_matrix,  int axis_index)
+KDL::Vector UrdfComposer::getUnitVector(KDL::Rotation rotation_matrix,  int axis_index)
 { 
 
   if(axis_index == 0)
@@ -252,7 +252,7 @@ KDL::Vector TeleopPanel::getUnitVector(KDL::Rotation rotation_matrix,  int axis_
 // %EndTag(processFeedback)%
 
 // %Tag(alignMarker)%
-void TeleopPanel::alignMarker( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+void UrdfComposer::alignMarker( const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
   /*geometry_msgs::Pose pose = feedback->pose;
 
@@ -277,7 +277,7 @@ void TeleopPanel::alignMarker( const visualization_msgs::InteractiveMarkerFeedba
 ////////////////////////////////////////////////////////////////////////////////////
 
 // %Tag(6DOF)%
-void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, const tf2::Vector3& position, bool show_6dof )
+void UrdfComposer::make6DofMarker( bool fixed, unsigned int interaction_mode, const tf2::Vector3& position, bool show_6dof )
 {
   InteractiveMarker int_marker;
   int_marker.header.frame_id = "marker_base_frame";// "map";
@@ -348,9 +348,9 @@ void TeleopPanel::make6DofMarker( bool fixed, unsigned int interaction_mode, con
   }
 
   interactive_marker_server_->insert(int_marker);
-  interactive_marker_server_->setCallback(int_marker.name, std::bind(&TeleopPanel::processFeedback, this, std::placeholders::_1));//
+  interactive_marker_server_->setCallback(int_marker.name, std::bind(&UrdfComposer::processFeedback, this, std::placeholders::_1));//
 
-  //interactive_marker_server_->setCallback(int_marker.name, &TeleopPanel::processFeedback);
+  //interactive_marker_server_->setCallback(int_marker.name, &UrdfComposer::processFeedback);
 
   
   //if (interaction_mode != visualization_msgs::InteractiveMarkerControl::NONE)

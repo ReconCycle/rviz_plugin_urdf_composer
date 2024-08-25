@@ -169,7 +169,7 @@ link_directories(${catkin_LIBRARY_DIRS})
 
 
 set(SRC_FILES
-  src/teleop_panel.cpp
+  src/urdf_composer.cpp
   src/urdf_vis_update.cpp
 )
 
