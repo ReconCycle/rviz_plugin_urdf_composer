@@ -65,6 +65,28 @@
 
 #include "tools.hpp"
 
+
+#include <stdio.h>
+
+
+#include <iostream>
+#include <fstream>
+
+#include <rviz/visualization_manager.h>
+#include <rviz/display_factory.h>
+#include <rviz/display_group.h>
+
+#include <kdl/chainfksolverpos_recursive.hpp>
+#include <kdl/frames.hpp>
+
+#include <tf2_kdl/tf2_kdl.h>
+#include <tf2/convert.h>
+
+
+//#include <tf2/LinearMath/Transform.h>
+
+
+
 namespace rviz_urdf_composer
 {
 
