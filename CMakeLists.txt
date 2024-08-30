@@ -18,6 +18,9 @@ find_package(catkin REQUIRED COMPONENTS tf2_geometry_msgs)
 find_package(catkin REQUIRED COMPONENTS rviz)
 find_package(catkin REQUIRED COMPONENTS robot_state_publisher)
 
+
+#find_package(catkin REQUIRED COMPONENTS OGRE)
+
 set(OGRE_INCLUDE_DIRS /usr/include/OGRE)
 set(OGRE_LIBRARIES /usr/lib/libOgreMain.so)
 
@@ -163,19 +166,19 @@ link_directories(${catkin_LIBRARY_DIRS})
 #   src/${PROJECT_NAME}/rviz_plugin_urdf_composer.cpp
 # )
 
+add_library(${PROJECT_NAME}_lib2 src/tools.cpp)
+target_link_libraries(${PROJECT_NAME}_lib2  ${catkin_LIBRARIES})
 
 
 set(SRC_FILES
-  src/teleop_panel.cpp
+  src/urdf_composer.cpp
   src/urdf_vis_update.cpp
 )
 
 
 add_library(${PROJECT_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES} ${PROJECT_NAME}_lib2 )
 
-add_library(${PROJECT_NAME}_lib2 src/tools.cpp)
-target_link_libraries(${PROJECT_NAME}_lib2  ${catkin_LIBRARIES})
 
 
 ## Add cmake target dependencies of the library

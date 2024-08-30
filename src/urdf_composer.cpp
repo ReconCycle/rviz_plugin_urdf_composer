@@ -27,35 +27,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-
-
-#include <iostream>
-#include <fstream>
 
 
 
 
-#include "teleop_panel.h"
-
-#include <rviz/visualization_manager.h>
-#include <rviz/display_factory.h>
-#include <rviz/display_group.h>
-
-#include <kdl/chainfksolverpos_recursive.hpp>
-#include <kdl/frames.hpp>
-
-#include <tf2_kdl/tf2_kdl.h>
-#include <tf2/convert.h>
-
+#include "urdf_composer.h"
 #include "marker_functions.h"
-//#include <tf2/LinearMath/Transform.h>
 
 namespace rviz_urdf_composer
 {
 
 
-TeleopPanel::TeleopPanel( QWidget* parent )
+UrdfComposer::UrdfComposer( QWidget* parent )
   : rviz::Panel( parent )
 {
 
@@ -216,10 +199,10 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
   urdf_managers_["assembly_urdf_model"].qt_control_layout->addWidget(button_delete_part);
 
-  connect(composition_components_combo_box_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedComponentsList);
+  connect(composition_components_combo_box_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &UrdfComposer::onComboBoxIndexChangedComponentsList);
 
-  connect(urdf_managers_["assembly_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedBase);
-  connect(urdf_managers_["component_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeleopPanel::onComboBoxIndexChangedComponent);
+  connect(urdf_managers_["assembly_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &UrdfComposer::onComboBoxIndexChangedBase);
+  connect(urdf_managers_["component_urdf_model"].tf_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &UrdfComposer::onComboBoxIndexChangedComponent);
   
 
 
@@ -268,7 +251,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
   // 
   // Here we take advantage of QObject's memory management behavior:
   // since "this" is passed to the new QTimer as its parent, the
-  // QTimer is deleted by the QObject destructor when this TeleopPanel
+  // QTimer is deleted by the QObject destructor when this UrdfComposer
   // object is destroyed.  Therefore we don't need to keep a pointer
   // to the timer.
 
@@ -296,7 +279,7 @@ TeleopPanel::TeleopPanel( QWidget* parent )
 
 }
 
-void TeleopPanel::deleteSelectedElement()
+void UrdfComposer::deleteSelectedElement()
 {
     //add parameters
     std::string robot_name = chosen_component_;
@@ -391,7 +374,7 @@ void TeleopPanel::deleteSelectedElement()
 
 }
 
-void TeleopPanel::saveGeneratedUrdf()
+void UrdfComposer::saveGeneratedUrdf()
 {
 
   QString filePath = QFileDialog::getSaveFileName(this, "Save File", file_loading_path_ , "All Files (*.yaml)");
@@ -420,7 +403,7 @@ void TeleopPanel::saveGeneratedUrdf()
 
 }
 
-void TeleopPanel::initEmptyUrdf()
+void UrdfComposer::initEmptyUrdf()
 {
 
   std::vector<std::string> current_active_components{};
@@ -437,7 +420,7 @@ void TeleopPanel::initEmptyUrdf()
 
 }
 
-void TeleopPanel::updateAssemblyUrdf(std::string path, std::string yaml_path)
+void UrdfComposer::updateAssemblyUrdf(std::string path, std::string yaml_path)
 {
 
   loadURDFtoParam(path, "assembly_urdf_model",yaml_path);
@@ -449,7 +432,7 @@ void TeleopPanel::updateAssemblyUrdf(std::string path, std::string yaml_path)
   updateAssemblyComponentList();
 }
 
-void TeleopPanel::addComponentToUrdf()
+void UrdfComposer::addComponentToUrdf()
 {
 
   //add parameters
@@ -515,7 +498,7 @@ void TeleopPanel::addComponentToUrdf()
 
 }
 
-QHBoxLayout* TeleopPanel::createInteractiveSpinBox( std::string name, std::string units, double min, double max )
+QHBoxLayout* UrdfComposer::createInteractiveSpinBox( std::string name, std::string units, double min, double max )
 {
   QHBoxLayout* movement_y_layout = new QHBoxLayout;
   movement_y_layout->addWidget( new QLabel( QString::fromStdString(name) ) );
@@ -534,7 +517,7 @@ QHBoxLayout* TeleopPanel::createInteractiveSpinBox( std::string name, std::strin
 
   
   //connect( pose_control_layout_boxes_[name], &QDoubleSpinBox::valueChanged, this, [this,name]{changedSpinBox(name);});
-  connect(pose_control_layout_boxes_[name], QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this,name](double value){changedSpinBox(name,value);}); //, &TeleopPanel::changedSpinBox);
+  connect(pose_control_layout_boxes_[name], QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this,name](double value){changedSpinBox(name,value);}); //, &UrdfComposer::changedSpinBox);
 /*connect(pose_control_layout_boxes_[name], &QLineEdit::textChanged,
         [this, name](const QString &text) { changedSpinBox(name, text.toDouble()); });*/
 
@@ -543,7 +526,7 @@ QHBoxLayout* TeleopPanel::createInteractiveSpinBox( std::string name, std::strin
 
   return movement_y_layout;
 }
-void TeleopPanel::changedSpinBox(std::string parameter_name, double value)
+void UrdfComposer::changedSpinBox(std::string parameter_name, double value)
 {
    
 
@@ -609,7 +592,7 @@ void TeleopPanel::changedSpinBox(std::string parameter_name, double value)
 
 }
 
-void TeleopPanel::loadCompositionURDFconfig()
+void UrdfComposer::loadCompositionURDFconfig()
 {
   QString filePath = QFileDialog::getOpenFileName(this, "Open File", file_loading_path_ , "All Files (*.yaml)");
 
@@ -635,7 +618,7 @@ void TeleopPanel::loadCompositionURDFconfig()
 
 }
 
-void  TeleopPanel::selectUrdfFile(std::string param_name_namespace)
+void  UrdfComposer::selectUrdfFile(std::string param_name_namespace)
 {  
   
   QString filePath = QFileDialog::getOpenFileName(this, "Open File", file_loading_path_ , "All Files (*.*)");
@@ -662,9 +645,9 @@ void  TeleopPanel::selectUrdfFile(std::string param_name_namespace)
 
 }
 
-void  TeleopPanel::updateAssemblyComponentList()
+void  UrdfComposer::updateAssemblyComponentList()
 {
-  std::cerr << "Warning1: " << std::endl;
+  //std::cerr << "Warning1: " << std::endl;
   QComboBox* combo_box = composition_components_combo_box_;
   combo_box->clear();
   std::vector<std::string> current_active_components;
@@ -672,14 +655,14 @@ void  TeleopPanel::updateAssemblyComponentList()
 
   for(std::string name : current_active_components)
   {
-    std::cerr << "Warning2: "<< name << std::endl;
+    std::cerr << "Current active compnenets: "<< name << std::endl;
     QString param_name_q = QString::fromStdString(name);
     combo_box->addItem(param_name_q);
   }
 
 }
 
-void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name_namespace, std::string composition_yaml)
+void  UrdfComposer::loadURDFtoParam(std::string urdf_path, std::string param_name_namespace, std::string composition_yaml)
 {
 
 
@@ -762,18 +745,29 @@ void  TeleopPanel::loadURDFtoParam(std::string urdf_path, std::string param_name
   QComboBox* combo_box = urdf_managers_[param_name_namespace].tf_combo_box;
   combo_box->clear();
   //ROS_INFO_STREAM("box2");
+
+
   for(std::string name : tf_names)
   {
     QString param_name_q = QString::fromStdString(name);
     combo_box->addItem(param_name_q);
   }
+
+
+  //HACK::
+  if(tf_names.size()==0)
+  {
+    combo_box->addItem("robotic_cell_base");
+  }
+
+
    // 
 
 
 
 }
 
-void TeleopPanel::onComboBoxIndexChangedBase(int index) {
+void UrdfComposer::onComboBoxIndexChangedBase(int index) {
 
   QString selectedItemText = urdf_managers_["assembly_urdf_model"].tf_combo_box->currentText();
 
@@ -794,7 +788,7 @@ void TeleopPanel::onComboBoxIndexChangedBase(int index) {
 }
 
 
-void TeleopPanel::onComboBoxIndexChangedComponentsList(int index) {
+void UrdfComposer::onComboBoxIndexChangedComponentsList(int index) {
 
 
 
@@ -807,7 +801,7 @@ void TeleopPanel::onComboBoxIndexChangedComponentsList(int index) {
 }
 
 
-void TeleopPanel::onComboBoxIndexChangedComponent(int index) {
+void UrdfComposer::onComboBoxIndexChangedComponent(int index) {
 
   setEnabledDisplay("MoveComponent",true);
 
@@ -817,7 +811,7 @@ void TeleopPanel::onComboBoxIndexChangedComponent(int index) {
 
 }
 
-geometry_msgs::TransformStamped TeleopPanel::createInitTF(std::string parrent, std::string child ) 
+geometry_msgs::TransformStamped UrdfComposer::createInitTF(std::string parrent, std::string child ) 
 {
   geometry_msgs::TransformStamped tf_transform; 
   tf_transform.transform.rotation.w = 1.0;
@@ -828,7 +822,7 @@ geometry_msgs::TransformStamped TeleopPanel::createInitTF(std::string parrent, s
 
 }
 
-bool  TeleopPanel::updateComponentsTFs()
+bool  UrdfComposer::updateComponentsTFs()
 {
 
 
@@ -877,7 +871,7 @@ bool  TeleopPanel::updateComponentsTFs()
   return true;
 }
 
-bool TeleopPanel::setEnabledDisplay(std::string name, bool enabled)
+bool UrdfComposer::setEnabledDisplay(std::string name, bool enabled)
 {
      // Access all displays
     //QList<rviz::Display*> displays = vis_manager_->getDisplayFactory()->getDisplays();
@@ -905,7 +899,7 @@ bool TeleopPanel::setEnabledDisplay(std::string name, bool enabled)
 
 
 
-void TeleopPanel::sendTFs()
+void UrdfComposer::sendTFs()
 {
 
   for(auto map_pair : urdf_managers_)
@@ -943,14 +937,14 @@ void TeleopPanel::sendTFs()
 
 }
 
-void TeleopPanel::save( rviz::Config config ) const
+void UrdfComposer::save( rviz::Config config ) const
 {
   rviz::Panel::save( config );
   /*config.mapSetValue( "Topic", output_topic_ );*/
 }
 
 // Load all configuration data for this panel from the given Config object.
-void TeleopPanel::load( const rviz::Config& config )
+void UrdfComposer::load( const rviz::Config& config )
 {
  rviz::Panel::load( config );
   /*QString topic;
@@ -961,7 +955,7 @@ void TeleopPanel::load( const rviz::Config& config )
   }*/
 }
 
-QWidget* TeleopPanel::findWidgetByName1(const std::string& widgetName_str, QLayout* layout) {
+QWidget* UrdfComposer::findWidgetByName1(const std::string& widgetName_str, QLayout* layout) {
   QString widgetName = QString::fromStdString(widgetName_str);
   
   for (int i = 0; i < layout->count(); ++i) {
@@ -980,7 +974,7 @@ QWidget* TeleopPanel::findWidgetByName1(const std::string& widgetName_str, QLayo
 
 
 template<typename widget_type>
-bool TeleopPanel::findWidgetByName(const std::string& widgetName_str, QLayout* layout, widget_type widget) 
+bool UrdfComposer::findWidgetByName(const std::string& widgetName_str, QLayout* layout, widget_type widget) 
 {
   
   QString widgetName = QString::fromStdString(widgetName_str);
@@ -1011,5 +1005,5 @@ bool TeleopPanel::findWidgetByName(const std::string& widgetName_str, QLayout* l
 // loadable by pluginlib::ClassLoader must have these two lines
 // compiled in its .cpp file, outside of any namespace scope.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(rviz_urdf_composer::TeleopPanel,rviz::Panel )
+PLUGINLIB_EXPORT_CLASS(rviz_urdf_composer::UrdfComposer,rviz::Panel )
 // END_TUTORIAL
