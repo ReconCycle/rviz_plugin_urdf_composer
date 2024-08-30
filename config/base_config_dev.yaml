@@ -3,6 +3,8 @@ active_description_elements:
 - module_robot1
 - module_robot2
 - module_camera_desk
+- module_vise
+- module_cutter
 module_cnc:
   ep: -0.0
   er: 0.0
@@ -48,3 +50,23 @@ module_camera_desk:
   x: 0.6
   y: -0.0
   z: 0.9000000000000018
+module_vise:
+  ep: 1.219486516859461e-14
+  er: -7.633444092397105e-14
+  ey: -1.5708
+  package_name: reconcycle_module_vise
+  parrent: robotic_cell_base
+  urdf_name: reconcycle_module_vise.urdf.xacro
+  x: 1.2
+  y: 0.0
+  z: 0.9
+module_cutter:
+  ep: 1.219486516859461e-14
+  er: -7.633444092397105e-14
+  ey: -1.5708
+  package_name: reconcycle_module_cutter
+  parrent: robotic_cell_base
+  urdf_name: reconcycle_module_cutter.urdf.xacro
+  x: 1.2
+  y: -0.6
+  z: 0.9
